@@ -1,6 +1,11 @@
 spring:
   profiles: dev
 
+
+  devtools:
+    livereload:
+      enabled: true
+
   datasource:
     url: jdbc:h2:mem:testdb
     username: sa
@@ -31,3 +36,4 @@ jasypt:
     property:
       prefix: ENC(
       suffix: )
+  password: djifajdcznvkzc
