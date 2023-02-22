@@ -21,12 +21,27 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'com.h2database:h2'
+
+	//롬복
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	//DB
+	runtimeOnly 'com.h2database:h2'
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+	//테스트
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+	//스웨거
+	implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: '2.9.2'
+	implementation group: 'io.springfox', name: 'springfox-swagger2', version: '2.9.2'
+
+	//JASYPT
+	implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.3'
 }
 
 tasks.named('test') {
