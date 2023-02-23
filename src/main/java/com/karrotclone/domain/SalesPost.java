@@ -1,11 +1,10 @@
 package com.karrotclone.domain;
 
 import com.karrotclone.domain.enums.Category;
+import com.karrotclone.domain.enums.OpenRange;
 import com.karrotclone.domain.enums.SalesState;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.karrotclone.dto.CreateSalesPostForm;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -19,7 +18,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SalesPost {
 
     @Id @GeneratedValue
@@ -28,17 +27,38 @@ public class SalesPost {
 
     @ManyToOne(fetch = FetchType.LAZY) //단방향 다대일
     @JoinColumn(name = "member_id")
-    private Member member;
+    private Member member; //작성자
 
     private long price; //가격
     private String title; //글 제목
     private String content; //글 내용
+    @Enumerated(value = EnumType.STRING)
     private Category category; //카테고리
     private LocalDateTime createDateTime; //작성일자
-    private Address preferPlace; //거래 희망 장소, nullable
+    private PreferPlace preferPlace; //거래 희망 장소, nullable
+    private boolean isShare; //나눔여부
+    private boolean isNegoAvailable; //가격제안 가능 여부
+    @Enumerated(value = EnumType.STRING)
+    private OpenRange openRange; //보여줄 동네 범위
     private int views; //조회수
+    @Enumerated(value = EnumType.STRING)
     private SalesState salesState; //판매상태
     private int favoriteUserCount; //관심표시를 한 유저
     private int chatCount; //이 거래로 인해 생성된 채팅 수
+
+    public SalesPost(CreateSalesPostForm form, Member member){
+        this.member = member;
+        this.title = form.getTitle();
+        this.category = form.getCategory();
+        this.price = form.getPrice();
+        this.isShare = form.isShare();
+        this.isNegoAvailable = form.isNegoAvailable();
+        this.content = form.getContent();
+        this.preferPlace = form.getPreferPlace();
+        this.openRange = form.getOpenRange();
+
+        this.salesState = SalesState.DEFAULT;
+        this.createDateTime = LocalDateTime.now();
+    }
 
 }
