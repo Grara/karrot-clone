@@ -26,6 +26,6 @@ public class CreateSalesPostForm {
     private boolean isShare; //나눔여부
     private boolean isNegoAvailable; //가격제안 가능여부
     private String content; //글 내용
-    private PreferPlace preferPlace; //거래 희망 장소
+    private PreferPlace preferPlace; //거래 희망 장소(선택)
     private OpenRange openRange; //보여줄 동네 범위
 }
