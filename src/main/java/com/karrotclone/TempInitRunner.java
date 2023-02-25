@@ -2,6 +2,7 @@ package com.karrotclone;
 
 import com.karrotclone.domain.Address;
 import com.karrotclone.domain.Member;
+import com.karrotclone.domain.SalesPost;
 import com.karrotclone.domain.enums.Roles;
 import com.karrotclone.repository.TempMemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +24,6 @@ public class TempInitRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         Member member = new Member("user", "ddd", "1234", Roles.USER, new Address());
         tempMemberRepository.save(member); //임시 멤버 생성
+
     }
 }

@@ -35,7 +35,7 @@ public class SalesPost {
     @Enumerated(value = EnumType.STRING)
     private Category category; //카테고리
     private LocalDateTime createDateTime; //작성일자
-    private PreferPlace preferPlace; //거래 희망 장소, nullable
+    private PreferPlace preferPlace; //거래 희망 장소(선택)
     private boolean isShare; //나눔여부
     private boolean isNegoAvailable; //가격제안 가능 여부
     @Enumerated(value = EnumType.STRING)
@@ -46,6 +46,7 @@ public class SalesPost {
     private int favoriteUserCount; //관심표시를 한 유저
     private int chatCount; //이 거래로 인해 생성된 채팅 수
 
+    //거래글 생성 데이터 폼과 멤버를 바탕으로 한 생성자
     public SalesPost(CreateSalesPostForm form, Member member){
         this.member = member;
         this.title = form.getTitle();
