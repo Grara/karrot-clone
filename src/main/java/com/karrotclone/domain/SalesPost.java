@@ -36,7 +36,6 @@ public class SalesPost {
     private Category category; //카테고리
     private LocalDateTime createDateTime; //작성일자
     private PreferPlace preferPlace; //거래 희망 장소(선택)
-    private boolean isShare; //나눔여부
     private boolean isNegoAvailable; //가격제안 가능 여부
     @Enumerated(value = EnumType.STRING)
     private OpenRange openRange; //보여줄 동네 범위
@@ -52,7 +51,6 @@ public class SalesPost {
         this.title = form.getTitle();
         this.category = form.getCategory();
         this.price = form.getPrice();
-        this.isShare = form.isShare();
         this.isNegoAvailable = form.isNegoAvailable();
         this.content = form.getContent();
         this.preferPlace = form.getPreferPlace();

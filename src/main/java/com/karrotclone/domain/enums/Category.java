@@ -8,25 +8,25 @@ import java.awt.print.Book;
  * @createdBy 노민준
  */
 public enum Category {
-    Digital, //디지털기기
-    Appliance, //생활가전
-    Interior, //가구, 인테리어
-    HomeAndKitchen, //생활, 주방
-    KidProduct, //유아제품
-    KidBook, //유아도서
-    WomenClothes, //여성의류
-    WomenAccessory, //여성잡화
-    MenFashion, //남성패션
-    Beauty, //뷰티, 미용
-    Sports, //스포츠
-    Hobby, //취미, 게임, 음반
-    Car, //중고차
-    Book, //도서
-    Ticket, //티켓, 교환권
-    Food, //가공식품
-    Pet, //반려동물 용품
-    Plant, //식물
-    Etc, //기타
+    DIGITAL, //디지털기기
+    APPLIANCE, //생활가전
+    INTERIOR, //가구, 인테리어
+    HOME_KITCHEN, //생활, 주방
+    KID_PRODUCT, //유아제품
+    KID_BOOK, //유아도서
+    WOMEN_CLOTHES, //여성의류
+    WOMEN_ACCESSORY, //여성잡화
+    MEN_FASHION, //남성패션
+    BEAUTY, //뷰티, 미용
+    SPORTS, //스포츠
+    HOBBY, //취미, 게임, 음반
+    CAR, //중고차
+    BOOK, //도서
+    TICKET, //티켓, 교환권
+    FOOD, //가공식품
+    PET, //반려동물 용품
+    PLANT, //식물
+    ETC, //기타
 
     //private String value;
 

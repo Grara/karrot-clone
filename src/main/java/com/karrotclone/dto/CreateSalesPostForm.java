@@ -23,7 +23,6 @@ public class CreateSalesPostForm {
     private String title; //제목
     private Category category; //카테고리
     private long price; //가격
-    private boolean isShare; //나눔여부
     private boolean isNegoAvailable; //가격제안 가능여부
     private String content; //글 내용
     private PreferPlace preferPlace; //거래 희망 장소(선택)
