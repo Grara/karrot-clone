@@ -26,6 +26,7 @@ public class Member implements UserDetails {
     private String nickName; //닉네임
     private String email; //이메일
     private String password; //비밀번호
+    @Enumerated
     private Roles role; //역할
 
     @Embedded //임베디드타입

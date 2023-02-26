@@ -1,0 +1,29 @@
+spring:
+  profiles: temp
+
+
+  devtools:
+    livereload:
+      enabled: true
+
+  datasource:
+    url: jdbc:mariadb://helloshop-db.ch30djhspsrg.ap-northeast-2.rds.amazonaws.com:3306/karrot
+    username: admin
+    password: ENC(BTbz4phZ3NL7xbMHNAE2LgBoAB3HXujL)
+    driver-class-name: org.mariadb.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+jasypt:
+  encryptor:
+    bean: jasyptStringEncryptor
+    property:
+      prefix: ENC(
+      suffix: )
+  password: djifajdcznvkzc
