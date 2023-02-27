@@ -63,11 +63,11 @@ public class SalesPostApiController {
      * @return 거래글 상세글 표시에 필요한 데이터 DTO
      * @since 2023-02-24
      * @createdBy 노민준
-     * @lastModified 2023-02-24
+     * @lastModified 2023-02-26
      */
     @ApiOperation(value="거래글 상세페이지 정보 가져오기", notes="id에 해당하는 거래글의 상세페이지 정보를 가져옵니다.")
     @GetMapping("/api/post/{id}")
-    public ResponseEntity<ResponseDto> getSalesPostDetail(@RequestParam("id") Long id){
+    public ResponseEntity<ResponseDto> getSalesPostDetail(@PathVariable("id") Long id){
 
         ResponseDto responseDto = new ResponseDto();
 
@@ -81,7 +81,7 @@ public class SalesPostApiController {
 
             //현재 거래글을 올린 판매자의 다른 최신 거래글 DTO 리스트, 최대 4개
             List<SalesPostSimpleDto> postsFromSeller =
-                    salesPostRepository.findDistinctTop4ByMemberAndIdNotOrderByIdDesc(findPost.getMember(), id)
+                    salesPostRepository.findTop4ListBySeller(findPost.getMember(), id)
                             .stream().map(SalesPostSimpleDto::new).collect(Collectors.toList());
 
             //상세페이지 DTO안에 거래글 리스트 추가
