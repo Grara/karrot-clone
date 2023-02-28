@@ -1,5 +1,9 @@
 package com.karrotclone.api;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.karrotclone.domain.Member;
 import com.karrotclone.domain.SalesPost;
 import com.karrotclone.dto.CreateSalesPostForm;
@@ -14,10 +18,13 @@ import org.springframework.data.repository.Repository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -31,24 +38,58 @@ public class SalesPostApiController {
 
     private final TempMemberRepository tempMemberRepository; //임시로 사용할 멤버 DAO객체
     private final SalesPostRepository salesPostRepository; //거래글 DAO
-
+    private final AmazonS3Client amazonS3Client;
+    private String bucketName = "helloshop-build";
     /**
      * 사용자가 입력한 데이터를 바탕으로 판매글을 생성합니다.
      * @param form 생성할 판매글 데이터 폼
      * @return 생성한 판매글의 ID값
      * @since 2023-02-23
      * @cretedBy 노민준
-     * @lastModified 2023-02-23
+     * @lastModified 2023-02-28
      */
     @ApiOperation(value="거래글 생성 요청",
             notes="제출한 데이터를 바탕으로 거래글을 생성합니다. 성공적으로 생성됐을 경우 생성된 거래글의 ID값을 반환합니다. 현재는 임시구현 상태")
     @PostMapping("/api/post")
-    public ResponseEntity<ResponseDto> createSalesPost(@RequestBody CreateSalesPostForm form){
+    public ResponseEntity<ResponseDto> createSalesPost(CreateSalesPostForm form) throws IOException {
 
         Member member = //임시 멤버 사용
                 tempMemberRepository.findByNickName("user").orElseThrow(() -> new NoSuchElementException("유저가 없습니다."));
 
         SalesPost post = new SalesPost(form, member); //거래글 생성
+
+        //이미지 s3에 업로드 후 반환할 DTO의 이밎 url리스트에 url 추가
+        for(MultipartFile image : form.getImages()){
+
+            String originName = image.getOriginalFilename();
+            String uuid = UUID.randomUUID().toString();
+            String extention = originName.substring(originName.lastIndexOf(".")); //확장자
+            String saveName = uuid + extention;
+            long size = image.getSize();
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(image.getContentType());
+            objectMetadata.setContentLength(size);
+
+            amazonS3Client.putObject(
+                    new PutObjectRequest(bucketName, saveName, image.getInputStream(), objectMetadata)
+                            .withCannedAcl(CannedAccessControlList.PublicRead)
+            );
+
+            String imagePath = amazonS3Client.getUrl(bucketName, originName).toString();
+
+            post.getImageUrls().add(imagePath); //거래글 엔티티에 url 저장
+        }
+
+        /*
+        이미지가없을 경우 url을 "없음"으로 추가
+        굳이 넣는 이유는 판매자의 다른글 불러오기할 때 N+1을 막기위해 이미지 url을 페치조인하는데
+        이미지url이 아무것도 없으면 거래글 조회가 안됨
+        */
+        if(post.getImageUrls().isEmpty()){
+            post.getImageUrls().add("없음");
+        }
+
         Long id = salesPostRepository.save(post).getId(); //거래글 저장 후 생성된 ID값
 
         ResponseDto dto = new ResponseDto();

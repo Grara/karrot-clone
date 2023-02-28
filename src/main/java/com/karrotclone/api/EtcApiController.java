@@ -1,11 +1,19 @@
 package com.karrotclone.api;
 
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.karrotclone.dto.ImageTestDto;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.jasypt.encryption.StringEncryptor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 잡다한 API요청을 처리해주는 컨트롤러입니다.
@@ -17,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class EtcApiController {
     private final StringEncryptor encryptor;
+    private final AmazonS3Client amazonS3Client;
+    private String bucketName = "helloshop-build";
 
     /**
      * 문자열을 JASYPT를 이용해 암호화하고 결과를 반환해줍니다
@@ -31,4 +41,31 @@ public class EtcApiController {
     public String encodeToJasypt(String plainTxt){
         return encryptor.encrypt(plainTxt);
     }
+
+    @PostMapping("/imagetest") //이미지 업로드 테스트용
+    public List<String> imageTest(ImageTestDto dto) throws Exception{
+
+        List<String> urlList = new ArrayList<>();
+
+        for(MultipartFile file: dto.getImages()){
+            String originName = file.getOriginalFilename();
+            long size = file.getSize();
+
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(file.getContentType());
+            objectMetadata.setContentLength(size);
+
+            amazonS3Client.putObject(
+                    new PutObjectRequest(bucketName, originName, file.getInputStream(), objectMetadata)
+                            .withCannedAcl(CannedAccessControlList.PublicRead)
+            );
+
+            String imagePath = amazonS3Client.getUrl(bucketName, originName).toString();
+            urlList.add(imagePath);
+        }
+
+        return urlList;
+    }
+
+
 }

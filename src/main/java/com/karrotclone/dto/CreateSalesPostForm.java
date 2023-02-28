@@ -7,12 +7,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 판매글 생성 시 필요한 데이터 폼입니다.
  * @since 2023-02-23
  * @createdBy 노민준
- * @lastModified 2023-02-23
+ * @lastModified 2023-02-28
  */
 @Data
 @Builder
@@ -20,6 +24,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateSalesPostForm {
 
+    private List<MultipartFile> images = new ArrayList<>(); //이미지 파일들
     private String title; //제목
     private Category category; //카테고리
     private long price; //가격

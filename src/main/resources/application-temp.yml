@@ -1,6 +1,10 @@
 spring:
   profiles: temp
 
+  servlet:
+    multipart:
+      max-file-size: 10MB #업로드 파일 사이즈 제한
+      max-request-size: 10MB #업로드 파일 사이즈 제한
 
   devtools:
     livereload:
@@ -27,3 +31,14 @@ jasypt:
       prefix: ENC(
       suffix: )
   password: djifajdcznvkzc
+
+#AWS 설정
+cloud:
+  aws:
+    iam:
+      access-key: ENC(Hi+Pynput2jHrHT0BGmk1TvNijKIlsgBrKh9SWMdVcQ=)
+      secret-key: ENC(QrdVsRutSbWU90oHj3GybHkvTJF/W6d41L6Xvox1sS8eqmfLYE5WkpuIOsT+e9bqCwXHvrEY/Mw=)
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false

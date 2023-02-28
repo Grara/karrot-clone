@@ -10,12 +10,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 거래글 화면 상세페이지에서 필요한 데이터를 나타내는 DTO입니다.
  * @since 2023-02-24
  * @createdBy 노민준
+ * @lastModified 2023-02-28
  */
 @Data
 @Builder
@@ -23,6 +25,7 @@ import java.util.List;
 @NoArgsConstructor
 public class SalesPostDetailDto {
 
+    private List<String> imageUrls = new ArrayList<>(); //이미지 링크 리스트
     private String nickName; //판매자 닉네임
     private String title; //글제목
     private String content; //글내용
@@ -38,6 +41,7 @@ public class SalesPostDetailDto {
     private List<SalesPostSimpleDto> postsFromSeller; //판매자가 등록한 다른 판매글
 
     public SalesPostDetailDto(SalesPost post){
+        this.imageUrls = post.getImageUrls();
         this.nickName = post.getMember().getNickName();
         this.title = post.getTitle();
         this.content = post.getContent();
