@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 거래글용 DAO입니다
@@ -15,6 +16,5 @@ import java.util.List;
  * @createdBy 노민준
  */
 public interface SalesPostRepository extends JpaRepository<SalesPost, Long>, SalesPostQueryRepository {
-
 
 }

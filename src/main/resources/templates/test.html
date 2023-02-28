@@ -1,0 +1,13 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div>
+    <form action="/imagetest" method="post" enctype="multipart/form-data">
+        <input type="file" multiple="multiple" name="images" accept="image/*">
+        <input name="name">
+        <button type="submit">제출</button>
+    </form>
+</div> <!-- /container -->
+</body>
+</html>

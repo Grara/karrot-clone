@@ -8,6 +8,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 판매글을 나타내는 엔티티 객체입니다.
@@ -29,8 +31,12 @@ public class SalesPost {
     @JoinColumn(name = "member_id")
     private Member member; //작성자
 
-    private long price; //가격
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Column(name = "image_url")
+    private List<String> imageUrls = new ArrayList<>(); //상품 이미지 url
+
     private String title; //글 제목
+    private long price; //가격
     private String content; //글 내용
     @Enumerated(value = EnumType.STRING)
     private Category category; //카테고리
