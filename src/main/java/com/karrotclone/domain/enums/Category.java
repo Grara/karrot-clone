@@ -27,14 +27,4 @@ public enum Category {
     PET, //반려동물 용품
     PLANT, //식물
     ETC, //기타
-
-    //private String value;
-
-    Category(){ }
-
-//    Category(String value){
-//        this.value = value;
-//    }
-
-
 }
