@@ -1,6 +1,6 @@
 package com.karrotclone.dto;
 
-import com.karrotclone.domain.PreferPlace;
+import com.karrotclone.domain.Coordinate;
 import com.karrotclone.domain.SalesPost;
 import com.karrotclone.domain.enums.Category;
 import com.karrotclone.domain.enums.SalesState;
@@ -17,7 +17,7 @@ import java.util.List;
  * 거래글 화면 상세페이지에서 필요한 데이터를 나타내는 DTO입니다.
  * @since 2023-02-24
  * @createdBy 노민준
- * @lastModified 2023-02-28
+ * @lastModified 2023-03-03
  */
 @Data
 @Builder
@@ -27,6 +27,7 @@ public class SalesPostDetailDto {
 
     private List<String> imageUrls = new ArrayList<>(); //이미지 링크 리스트
     private String nickName; //판매자 닉네임
+    private String townName; //동네명
     private String title; //글제목
     private String content; //글내용
     private long price; //가격
@@ -37,11 +38,10 @@ public class SalesPostDetailDto {
     private int views; //조회수
     private int favoriteUserCount; //관심수
     private int chatCount; //채팅수
-    private PreferPlace preferPlace; //선호장소(선택)
+    private Coordinate preferPlace; //선호장소(선택)
     private List<SalesPostSimpleDto> postsFromSeller; //판매자가 등록한 다른 판매글
 
-    public SalesPostDetailDto(SalesPost post){
-        this.imageUrls = post.getImageUrls();
+    public SalesPostDetailDto(SalesPost post) {
         this.nickName = post.getMember().getNickName();
         this.title = post.getTitle();
         this.content = post.getContent();
@@ -53,6 +53,16 @@ public class SalesPostDetailDto {
         this.views = post.getViews();
         this.favoriteUserCount = post.getFavoriteUserCount();
         this.chatCount = post.getChatCount();
-        this.preferPlace = post.getPreferPlace();
+
+        if(!post.getImageUrls().get(0).equals("없음")){ //이미지가 있을 경우
+            this.imageUrls = post.getImageUrls();
+        }
+
+        if(post.isHasPreferPlace()){ //거래글에 거래 선호장소를 지정했을 경우
+            this.preferPlace = post.getTradePlace();
+            this.townName = preferPlace.getTownName();
+        }else{
+            this.townName = post.getMember().getTown().getTownName();
+        }
     }
 }

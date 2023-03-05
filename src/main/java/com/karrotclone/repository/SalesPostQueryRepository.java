@@ -2,6 +2,10 @@ package com.karrotclone.repository;
 
 import com.karrotclone.domain.Member;
 import com.karrotclone.domain.SalesPost;
+import com.karrotclone.dto.SalesPostSearchCondition;
+import com.karrotclone.dto.SalesPostSimpleDto;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
 import java.util.List;
 
@@ -19,4 +23,15 @@ public interface SalesPostQueryRepository {
      * @since 2023-02-26
      */
     List<SalesPost> findTop4ListBySeller(Member member, Long id);
+
+    /**
+     * 검색조건과 페이지 정보를 바탕으로 Slice를 생성해서 반환해줍니다.
+     * @param member 홈 화면을 사용중인 유저의 엔티티 객체
+     * @param condition 검색 조건
+     * @param pageable 요청한 페이지 정보
+     * @return 생성된 Slice 객체
+     * @since 2023-03-03
+     * @createdBy 노민준
+     */
+    Slice<SalesPostSimpleDto> findListWithSlice(Member member, SalesPostSearchCondition condition, Pageable pageable);
 }

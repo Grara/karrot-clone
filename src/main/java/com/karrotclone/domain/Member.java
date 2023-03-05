@@ -15,6 +15,7 @@ import java.util.List;
  * 회원을 나타내는 엔티티 객체입니다.
  * @since 2023-02-22
  * @createdBy 노민준
+ * @lastModified 2023-03-03
  */
 @Entity
 @Data
@@ -30,14 +31,17 @@ public class Member implements UserDetails {
     private Roles role; //역할
 
     @Embedded //임베디드타입
-    private Address address;
+    private Coordinate town;
 
-    public Member(String nickName, String email, String password, Roles role, Address address) {
+    private long searchRange;
+
+    public Member(String nickName, String email, String password, Roles role, Coordinate town) {
         this.nickName = nickName;
         this.email = email;
         this.password = password;
         this.role = role;
-        this.address = address;
+        this.town = town;
+        this.searchRange = 20000;
     }
 
     @Override //권한정보
