@@ -44,6 +44,9 @@ public class Member implements UserDetails {
         this.searchRange = 20000;
     }
 
+    public Member(Long id, String email, String password, List<GrantedAuthority> authorities, String nickName) {
+    }
+
     @Override //권한정보
     public Collection<? extends GrantedAuthority> getAuthorities() {
         SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.toString());

@@ -1,5 +1,10 @@
 package com.karrotclone.config;
 
+import com.karrotclone.config.jwt.JwtAccessDeniedHandler;
+import com.karrotclone.config.jwt.JwtAuthenticationEntryPoint;
+import com.karrotclone.config.jwt.JwtAuthenticationFilter;
+import com.karrotclone.config.jwt.JwtTokenProvider;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,9 +19,16 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtTokenProvider jwtTokenProvider;
 
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     @Bean
     @Order(0)
     public SecurityFilterChain resources(HttpSecurity http) throws Exception{
@@ -24,6 +36,9 @@ public class SecurityConfig {
                         .antMatchers("/pgadmin/**"))
                 .authorizeHttpRequests(authorize -> authorize
                         .anyRequest().permitAll())
+                .requestCache(RequestCacheConfigurer::disable)
+                .securityContext(AbstractHttpConfigurer::disable)
+                .sessionManagement(AbstractHttpConfigurer::disable)
                 .build();
     }
 
@@ -38,6 +53,16 @@ public class SecurityConfig {
                 .and()
                 .cors()
                 .disable()
+                .httpBasic()
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .and()
+                .exceptionHandling().accessDeniedHandler(jwtAccessDeniedHandler)
+                .and()
+                .authorizeHttpRequests()
+                .antMatchers("/","/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

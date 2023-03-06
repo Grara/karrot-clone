@@ -10,4 +10,5 @@ import java.util.Optional;
  */
 public interface TempMemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByNickName(String nickname); //멤버 닉네임으로 조회
+    Optional<Member> findByEmail(String email);
 }

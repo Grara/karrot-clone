@@ -77,6 +77,11 @@ dependencies {
 	//쿼리dsl
 	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
 	implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
+
+	//redis 추가
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-redis
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-redis', version: '2.7.5'
+
 }
 
 //쿼리dsl 관련 설정
