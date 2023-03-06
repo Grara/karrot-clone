@@ -42,30 +42,4 @@ public class EtcApiController {
         return encryptor.encrypt(plainTxt);
     }
 
-    @PostMapping("/imagetest") //이미지 업로드 테스트용
-    public List<String> imageTest(ImageTestDto dto) throws Exception{
-
-        List<String> urlList = new ArrayList<>();
-
-        for(MultipartFile file: dto.getImages()){
-            String originName = file.getOriginalFilename();
-            long size = file.getSize();
-
-            ObjectMetadata objectMetadata = new ObjectMetadata();
-            objectMetadata.setContentType(file.getContentType());
-            objectMetadata.setContentLength(size);
-
-            amazonS3Client.putObject(
-                    new PutObjectRequest(bucketName, originName, file.getInputStream(), objectMetadata)
-                            .withCannedAcl(CannedAccessControlList.PublicRead)
-            );
-
-            String imagePath = amazonS3Client.getUrl(bucketName, originName).toString();
-            urlList.add(imagePath);
-        }
-
-        return urlList;
-    }
-
-
 }
