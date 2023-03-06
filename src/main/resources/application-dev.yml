@@ -40,7 +40,7 @@ jasypt:
     property:
       prefix: ENC(
       suffix: )
-  password: djifajdcznvkzc
+  password: ekdrmszmffhs
 
 #AWS 설정
 cloud:
