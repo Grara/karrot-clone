@@ -31,6 +31,10 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
 
+  redis:
+    host: localhost
+    port: 6379
+
 logging.level:
   org.hibernate.SQL: debug
 
@@ -52,4 +56,3 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
-
