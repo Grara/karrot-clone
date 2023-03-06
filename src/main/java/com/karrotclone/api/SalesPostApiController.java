@@ -28,8 +28,9 @@ import java.util.stream.Collectors;
 
 /**
  * 판매글과 관련된 API요청을 처리하는 컨트롤러입니다.
- * @since 2023-02-23
+ *
  * @createdBy 노민준
+ * @since 2023-02-23
  */
 @RequiredArgsConstructor
 @RestController
@@ -39,16 +40,18 @@ public class SalesPostApiController {
     private final SalesPostRepository salesPostRepository; //거래글 DAO
     private final AmazonS3Client amazonS3Client;
     private String bucketName = "helloshop-build";
+
     /**
      * 사용자가 입력한 데이터를 바탕으로 판매글을 생성합니다.
+     *
      * @param form 생성할 판매글 데이터 폼
      * @return 생성한 판매글의 ID값
-     * @since 2023-02-23
      * @cretedBy 노민준
      * @lastModified 2023-03-03
+     * @since 2023-02-23
      */
-    @ApiOperation(value="거래글 생성 요청",
-            notes="제출한 데이터를 바탕으로 거래글을 생성합니다. 성공적으로 생성됐을 경우 생성된 거래글의 ID값을 반환합니다. (ver.1)")
+    @ApiOperation(value = "거래글 생성 요청",
+            notes = "제출한 데이터를 바탕으로 거래글을 생성합니다. 성공적으로 생성됐을 경우 생성된 거래글의 ID값을 반환합니다. (ver.1)")
     @PostMapping("/api/v1/post")
     public ResponseEntity<ResponseDto> createSalesPost(CreateSalesPostForm form) throws IOException {
 
@@ -98,7 +101,7 @@ public class SalesPostApiController {
             dto.setMessage("거래글이 성공적으로 생성되었습니다. data는 거래글의 id입니다.");
             return new ResponseEntity<>(dto, HttpStatus.CREATED);
 
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             dto.setData(e.getMessage());
             dto.setMessage("거래글의 생성에 실패했습니다. data는 에러메시지 입니다.");
             return new ResponseEntity<>(dto, HttpStatus.BAD_REQUEST);
@@ -107,72 +110,62 @@ public class SalesPostApiController {
 
     /**
      * id에 해당하는 거래글의 상세페이지 정보를 가져옵니다.
+     *
      * @param id 표시할 거래글의 id값
      * @return 거래글 상세글 표시에 필요한 데이터 DTO
-     * @since 2023-02-24
      * @createdBy 노민준
      * @lastModified 2023-03-03
+     * @since 2023-02-24
      */
-    @ApiOperation(value="거래글 상세페이지 정보 가져오기", notes="id에 해당하는 거래글의 상세페이지 정보를 가져옵니다. (ver.1)")
+    @ApiOperation(value = "거래글 상세페이지 정보 가져오기", notes = "id에 해당하는 거래글의 상세페이지 정보를 가져옵니다. (ver.1)")
     @GetMapping("/api/v1/post/{id}")
-    public ResponseEntity<ResponseDto> getSalesPostDetail(@PathVariable("id") Long id){
+    public ResponseEntity<ResponseDto> getSalesPostDetail(@PathVariable("id") Long id) {
 
         ResponseDto responseDto = new ResponseDto();
 
-        try {
-            //id로 거래글을 찾기
-            SalesPost findPost =
-                    salesPostRepository.findById(id).orElseThrow(() -> new NoSuchElementException("id에 해당하는 거래글이 없습니다."));
 
-            //DTO로 변환
-            SalesPostDetailDto detailDto = new SalesPostDetailDto(findPost);
+        //id로 거래글을 찾기
+        SalesPost findPost =
+                salesPostRepository.findById(id).orElseThrow(() -> new NoSuchElementException("id에 해당하는 거래글이 없습니다."));
 
-            //현재 거래글을 올린 판매자의 다른 최신 거래글 DTO 리스트, 최대 4개
-            List<SalesPostSimpleDto> postsFromSeller =
-                    salesPostRepository.findTop4ListBySeller(findPost.getMember(), id)
-                            .stream().map(SalesPostSimpleDto::new).collect(Collectors.toList());
+        //DTO로 변환
+        SalesPostDetailDto detailDto = new SalesPostDetailDto(findPost);
 
-            //상세페이지 DTO안에 거래글 리스트 추가
-            detailDto.setPostsFromSeller(postsFromSeller);
+        //현재 거래글을 올린 판매자의 다른 최신 거래글 DTO 리스트, 최대 4개
+        List<SalesPostSimpleDto> postsFromSeller =
+                salesPostRepository.findTop4ListBySeller(findPost.getMember(), id)
+                        .stream().map(SalesPostSimpleDto::new).collect(Collectors.toList());
 
-            responseDto.setMessage("id에 해당하는 거래글의 정보를 정상적으로 가져왔습니다.");
-            responseDto.setData(detailDto);
+        //상세페이지 DTO안에 거래글 리스트 추가
+        detailDto.setPostsFromSeller(postsFromSeller);
 
-            return new ResponseEntity<>(responseDto, HttpStatus.OK);
+        responseDto.setMessage("id에 해당하는 거래글의 정보를 정상적으로 가져왔습니다.");
+        responseDto.setData(detailDto);
 
-        }catch (NoSuchElementException e){ //거래글을 찾지 못했을 경우
-            responseDto.setMessage(e.getMessage());
-            responseDto.setData(null);
-
-            return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
     /**
      * 홈 화면에서 거래글 목록 DTO를 가져옵니다.
+     *
      * @param condition 검색 조건
-     * @param pageable 페이징에 필요한 파라미터값, page=n 형식으로 보내면 됨
+     * @param pageable  페이징에 필요한 파라미터값, page=n 형식으로 보내면 됨
      * @return
-     * @since 2023-03-03
      * @createdBy 노민준
+     * @since 2023-03-03
      */
-    @ApiOperation(value="거래글 목록 가져오기", notes="페이징 정보와 검색조건을 바탕으로 거래글 DTO 리스트를 가져옵니다.")
+    @ApiOperation(value = "거래글 목록 가져오기", notes = "페이징 정보와 검색조건을 바탕으로 거래글 DTO 리스트를 가져옵니다.")
     @GetMapping("/api/v1/post")
-    public ResponseEntity<ResponseDto> getPosts(@ModelAttribute SalesPostSearchCondition condition, Pageable pageable){
+    public ResponseEntity<ResponseDto> getPosts(@ModelAttribute SalesPostSearchCondition condition, Pageable pageable) {
 
         ResponseDto dto = new ResponseDto();
 
-        try {
-            Member member = //임시 멤버 사용
-                    tempMemberRepository.findByNickName("user").orElseThrow(() -> new NoSuchElementException("유저가 없습니다."));
+        Member member = //임시 멤버 사용
+                tempMemberRepository.findByNickName("user").orElseThrow(() -> new NoSuchElementException("유저가 없습니다."));
 
-            dto.setMessage("거래 목록을 가져오는데 성공했습니다.");
-            dto.setData(salesPostRepository.findListWithSlice(member, condition, pageable));
-            return new ResponseEntity<>(dto, HttpStatus.OK);
-        }catch (Exception e){
-            dto.setMessage("처리하는 도중 오류가 발생했습니다.");
-            dto.setData(e);
-            return new ResponseEntity<>(dto, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        dto.setMessage("거래 목록을 가져오는데 성공했습니다.");
+        dto.setData(salesPostRepository.findListWithSlice(member, condition, pageable));
+        return new ResponseEntity<>(dto, HttpStatus.OK);
+
     }
 }
