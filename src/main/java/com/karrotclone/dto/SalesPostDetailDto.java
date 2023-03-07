@@ -35,6 +35,7 @@ public class SalesPostDetailDto {
     private LocalDateTime createDateTime; //작성시간
     private SalesState salesState; //거래상태
     private boolean isNegoAvailable; //가격제안 가능여부
+    private boolean isHide; //숨기기 여부
     private int views; //조회수
     private int favoriteUserCount; //관심수
     private int chatCount; //채팅수
@@ -50,6 +51,7 @@ public class SalesPostDetailDto {
         this.createDateTime = post.getCreateDateTime();
         this.salesState = post.getSalesState();
         this.isNegoAvailable = post.isNegoAvailable();
+        this.isHide = post.isHide();
         this.views = post.getViews();
         this.favoriteUserCount = post.getFavoriteUserCount();
         this.chatCount = post.getChatCount();

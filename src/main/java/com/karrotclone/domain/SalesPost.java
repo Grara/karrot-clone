@@ -2,12 +2,13 @@ package com.karrotclone.domain;
 
 import com.karrotclone.domain.enums.Category;
 import com.karrotclone.domain.enums.SalesState;
-import com.karrotclone.dto.CreateSalesPostForm;
+import com.karrotclone.dto.SalesPostDataForm;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -37,26 +38,53 @@ public class SalesPost {
     private String title; //글 제목
     private long price; //가격
     private String content; //글 내용
+
     @Enumerated(value = EnumType.STRING)
     private Category category; //카테고리
+
+    @Setter(AccessLevel.NONE)
     private LocalDateTime createDateTime; //작성일자
+
     private Coordinate tradePlace; //거래 장소
     private boolean hasPreferPlace; //거래 희망 장소를 지정했는지?
     private boolean isNegoAvailable; //가격제안 가능 여부
+    private boolean isHide; //숨기기 여부
     private long openRange; //보여줄 동네 범위
+
+    @Setter(AccessLevel.NONE)
     private int views; //조회수
+
     @Enumerated(value = EnumType.STRING)
     private SalesState salesState; //판매상태
+
+    @Setter(AccessLevel.NONE)
     private int favoriteUserCount; //관심표시를 한 유저
+
+    @Setter(AccessLevel.NONE)
     private int chatCount; //이 거래로 인해 생성된 채팅 수
 
+
+    @PrePersist //영속화 되기전에 실행할 로직
+    public void setting(){
+        /*
+        이미지가없을 경우 url을 "없음"으로 추가
+        굳이 넣는 이유는 판매자의 다른글 불러오기할 때 N+1을 막기위해 이미지 url을 페치조인하는데
+        이미지url이 아무것도 없으면 거래글 조회가 안됨
+        */
+        if(getImageUrls() == null || getImageUrls().isEmpty()){
+            setImageUrls(new ArrayList<>());
+            getImageUrls().add("없음");
+        }
+    }
+
     /**
-     * 거래글 생성요청 폼 데이터와 판매자의 정보를 바탕으로 거래글 객체를 생성합니다.
+     * 폼 데이터와 판매자의 정보를 바탕으로 거래글 객체를 생성합니다.
      * @param form 폼 데이터
      * @param member 판매자
      * @return 생성된 거래글 객체
+     * @since 2023-03-04
      */
-    public static SalesPost createByForm(CreateSalesPostForm form, Member member){
+    public static SalesPost createByFormAndMember(SalesPostDataForm form, Member member){
         SalesPost post = SalesPost.builder()
                 .member(member)
                 .title(form.getTitle())
@@ -64,6 +92,7 @@ public class SalesPost {
                 .category(form.getCategory())
                 .price(form.getPrice())
                 .isNegoAvailable(form.isNegoAvailable())
+                .isHide(false)
                 .salesState(SalesState.DEFAULT)
                 .createDateTime(LocalDateTime.now())
                 .openRange(form.getRangeStep().getDistance()) //공개 범위 설정
@@ -81,6 +110,43 @@ public class SalesPost {
         }
 
         return post;
+    }
+
+    /**
+     * 폼 데이터를 바탕으로 거래글을 수정합니다.
+     * @param form 폼 데이터
+     * @return 생성된 거래글 객체
+     * @since 2023-03-06
+     */
+    public void updateByForm(SalesPostDataForm form){
+        setTitle(form.getTitle());
+        setContent(form.getContent());
+        setCategory(form.getCategory());
+        setPrice(form.getPrice());
+        setNegoAvailable(form.isNegoAvailable());
+        setOpenRange(form.getRangeStep().getDistance());
+
+        if(form.getPreferPlace() != null){ //생성요청폼에 거래선호 장소를 지정한 경우
+            Coordinate.validateNotNull(form.getPreferPlace()); //선호장소의 필드에 모두 값이 있는지 체크
+            setTradePlace(form.getPreferPlace());
+            setHasPreferPlace(true);
+        }else{ //안했을 경우 회원의 기본 동네위치로 설정
+            setTradePlace(member.getTown());
+            setHasPreferPlace(false);
+        }
+    }
+
+
+    public void addViews(){ //조회수 추가
+        this.views++;
+    }
+
+    public void addFavoriteCount(){ //관심 수 추가
+        this.favoriteUserCount++;
+    }
+
+    public void addChatCount(){ //채팅 수 추가
+        this.chatCount++;
     }
 
 }

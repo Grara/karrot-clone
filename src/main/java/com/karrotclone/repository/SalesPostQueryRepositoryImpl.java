@@ -1,11 +1,12 @@
 package com.karrotclone.repository;
 
-import com.karrotclone.domain.Coordinate;
 import com.karrotclone.domain.Member;
+import com.karrotclone.domain.QMember;
+import com.karrotclone.domain.QSalesPost;
 import com.karrotclone.domain.SalesPost;
 import com.karrotclone.domain.enums.SalesState;
-import com.karrotclone.dto.SalesPostSearchCondition;
-import com.karrotclone.dto.SalesPostSimpleDto;
+import com.karrotclone.dto.*;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -15,6 +16,8 @@ import org.springframework.util.StringUtils;
 import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.karrotclone.domain.QSalesPost.salesPost;
 
 /**
  * 거래글과 관련된 복잡한 쿼리를 구현한 클래스입니다.
@@ -35,7 +38,7 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
     /**
      * DB에서 판매자가 최근에 등록한 거래글 리스트를 찾아서 반환합니다. (최대4개) <br>
      * 이미지 url을 페치조인합니다. <br>
-     * 인자로 들어온 id와 같은 거래글이거나 거래상태가 완료일 경우는 제외합니다. <br>
+     * 인자로 들어온 id와 같은 거래글이거나 거래상태가 완료일 경우, 숨기기가 활성화된 경우는 제외합니다. <br>
      * 결과는 ID 내림차순 정렬 <br>
      *
      * @param member 판매자
@@ -48,7 +51,7 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
         return em.createQuery("SELECT s " +
                         "FROM SalesPost s " +
                         "JOIN FETCH s.imageUrls " + //이미지 url 가져올 때 N+1 방지
-                        "WHERE s.id != :id AND s.salesState != :salesState " +
+                        "WHERE s.id != :id AND s.salesState != :salesState AND s.isHide != true " +
                         "ORDER BY s.id DESC", SalesPost.class)
                 .setParameter("id", id)
                 .setParameter("salesState", SalesState.COMPLETE)
@@ -57,16 +60,15 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
     }
 
     /**
-     * 검색조건과 페이지 정보를 바탕으로 Slice를 생성해서 반환해줍니다.
+     * 홈화면에서 검색조건과 페이지 정보를 바탕으로 Slice를 생성해서 반환해줍니다.
      * @param member 홈 화면을 사용중인 유저의 엔티티 객체
      * @param condition 검색 조건
      * @param pageable 요청한 페이지 정보
-     * @return 생성된 Slice 객체
-     * @since 2023-03-03
-     * @createdBy 노민준
+     * @return 거래글 DTO 리스트를 지닌 Slice 객체
+     * @lastMidified 2023-03-07 노민준
      */
     @Override
-    public Slice<SalesPostSimpleDto> findListWithSlice(Member member, SalesPostSearchCondition condition, Pageable pageable) {
+    public Slice<SalesPostSimpleDto> findListWithSlice(Member member, PostHomeSearchCondition condition, Pageable pageable) {
 
         List<SalesPost> postList = em.createQuery("SELECT s " +
                         "FROM SalesPost s " +
@@ -87,14 +89,66 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
     }
 
     /**
-     * 멤버의 정보와 검색조건을 바탕으로 WHERE문을 생성합니다. 리팩토링 필요
+     * 지정한 판매자의 다른 판매글을 가져옵니다.
+     * @param condition 검색 조건
+     * @param pageable 페이징 파라미터
+     * @return 거래글 DTO 리스트를 지닌 Slice 객체
+     * @lastModified 2023-03-07 노민준
+     */
+    @Override
+    public Slice<SalesPostSimpleDto> findAllListBySeller(PostSellerSearchCondition condition, Pageable pageable) {
+        List<SalesPostSimpleDto> content = queryFactory
+                .select(new QSalesPostSimpleDto(salesPost))
+                .from(salesPost)
+                .leftJoin(salesPost.member, QMember.member).fetchJoin()
+                .where(
+                        salesPost.member.nickName.eq(condition.getNickName()), //판매자명
+                        stateEq(condition.getSalesState()), //거래상태
+                        salesPost.isHide.eq(false)
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        return new SliceImpl<>(content, pageable, content.size() == pageable.getPageSize());
+
+    }
+
+    /**
+     * 나의 판매글 목록을 가져옵니다.
+     * @param member 현재 불러올 판매글 목록의 판매자
+     * @param condition 검색 조건
+     * @param pageable 페이징 파라미터
+     * @return 거래글 DTO 리스트를 지닌 Slice 객체
+     * @lastModified 2023-03-07
+     */
+    @Override
+    public Slice<SalesPostSimpleDto> findMySalesList(Member member, MySalesSearchCondition condition, Pageable pageable) {
+        List<SalesPostSimpleDto> content = queryFactory
+                .select(new QSalesPostSimpleDto(salesPost))
+                .from(salesPost)
+                .leftJoin(salesPost.member, QMember.member).fetchJoin()
+                .where(
+                        salesPost.member.eq(member),
+                        stateEq(condition.getSalesState()),
+                        salesPost.isHide.eq(condition.getIsHide())
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        return new SliceImpl<>(content, pageable, content.size() == pageable.getPageSize());
+    }
+
+    /**
+     * 멤버의 정보와 검색조건을 바탕으로 JQPL WHERE문을 생성합니다. 리팩토링 필요
      * @param member 홈 화면을 사용중인 유저의 엔티티 객체
      * @param condition 검색조건
      * @return 완성된 WHERE문
      * @since 2023-03-03
      * @createdBy 노민준
      */
-    private String createWhereFromCondition(Member member, SalesPostSearchCondition condition) {
+    private String createWhereFromCondition(Member member, PostHomeSearchCondition condition) {
 
         String memberLaStart = Long.toString(member.getTown().getLatitude() - member.getSearchRange()); //멤버의 위도 - 탐지 거리
         String memberLaEnd = Long.toString(member.getTown().getLatitude() + member.getSearchRange()); //멤버의 위도 + 탐지 거리
@@ -118,7 +172,7 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
                 //멤버의 경도가 거래글의 경도±탐지거리 안에 위치해야함
                 memberLo + " BETWEEN s.tradePlace.longitude - s.openRange AND s.tradePlace.longitude + s.openRange" +
                 " AND " +
-                "s.salesState != 'COMPLETE'"; //거래완료일 경우 제외
+                "s.salesState != 'COMPLETE' AND s.isHide != true "; //거래완료, 숨기기일 경우 제외
 
         //검색어를 입력했을 경우
         if (StringUtils.hasText(condition.getTitle())) {
@@ -136,5 +190,21 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
 
     }
 
+
+    /**
+     * 거래글 상태에 따른 조건을 생성해줍니다. (쿼리DSL 사용 용도)
+     * @param state 지정할 거래글 상태 조건
+     * @lastModified 2023-03-07 노민준
+     */
+    private BooleanExpression stateEq(SalesState state){
+        if(state == null) return null; //거래상태가 조건으로 지정안되어있으면 조건무시
+
+        else if(state == SalesState.COMPLETE){ //거래완료일 경우
+            return salesPost.salesState.eq(state);
+        }
+
+        //아니면 판매중or예약중
+        else return salesPost.salesState.eq(SalesState.DEFAULT).or(salesPost.salesState.eq(SalesState.RESERVE));
+    }
 
 }
