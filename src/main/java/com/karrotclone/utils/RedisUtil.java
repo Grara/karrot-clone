@@ -30,7 +30,7 @@ public class RedisUtil {
     public void setDataExpire(String key, String value, long duration){
         ValueOperations<String, String> valueOperations = stringRedisTemplate.opsForValue();
         Duration expireDuation = Duration.ofMillis(duration);
-        valueOperations.set(key, value, duration);
+        valueOperations.set(key, value, expireDuation);
     }// 이미 생성되어 있거나 생성되어 있지 않은 데이터를 만료기간까지 설정해 저장하는 메소드
 
     public void deleteData(String key){
