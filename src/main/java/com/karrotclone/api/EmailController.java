@@ -19,7 +19,7 @@ public class EmailController {
         System.out.println("send verification mail to " + email);
     }
 
-    @GetMapping("api/v1/verifyemail")
+    @PostMapping("api/v1/verifyemail")
     @ResponseBody
     public String verfiyEmail(@RequestBody VerifyEmailVO verifyEmailVO){
         return emailService.verifyEmail(verifyEmailVO);
