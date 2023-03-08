@@ -22,7 +22,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateSalesPostForm {
+public class SalesPostDataForm {
 
     private List<MultipartFile> images = new ArrayList<>(); //이미지 파일들
     private String title; //제목

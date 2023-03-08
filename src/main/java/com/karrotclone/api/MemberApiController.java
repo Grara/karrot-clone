@@ -6,16 +6,15 @@ import com.karrotclone.domain.SalesPost;
 import com.karrotclone.dto.ResponseDto;
 import com.karrotclone.dto.SalesPostDetailDto;
 import com.karrotclone.dto.SalesPostSimpleDto;
+import com.karrotclone.exception.DomainNotFoundException;
 import com.karrotclone.repository.FavoriteRepository;
 import com.karrotclone.repository.SalesPostRepository;
 import com.karrotclone.repository.TempMemberRepository;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,19 +37,21 @@ public class MemberApiController {
     private final FavoriteRepository favoriteRepository;
 
     /**
-     * id에 해당하는 거래글을 관심목록에 추가합니다.
-     * @param postId 추가할 거래글의 id
+     * 거래글을 관심목록에 추가하거나, 이미 관심목록에 있다면 삭제합니다.
+     * @param postId 거래글의 id
      * @return 생성된 Favorite id
+     * @lastModified 2023-03-07 노민준
      */
+    @ApiOperation(value="관심목록 추가 or 삭제 요청", notes = "거래글을 관심목록에 추가하거나, 이미 관심목록에 있다면 삭제합니다.")
     @PostMapping("/api/v1/favorites")
-    public ResponseEntity<ResponseDto> addFavorite(@RequestBody Long postId) {
+    public ResponseEntity<ResponseDto> switchFavorite(@RequestBody Long postId) {
 
         ResponseDto dto = new ResponseDto();
 
         Member member = memberRepository.findByNickName("user").get();
 
         SalesPost post =
-                salesPostRepository.findById(postId).orElseThrow(() -> new NoSuchElementException("id에 해당하는 거래글이 없습니다."));
+                salesPostRepository.findById(postId).orElseThrow(() -> new DomainNotFoundException("id에 해당하는 거래글이 없습니다."));
 
         List<Favorite> existingList = favoriteRepository.findListByPostAndMember(post, member);
 
@@ -58,21 +59,34 @@ public class MemberApiController {
             Favorite favorite = new Favorite();
             favorite.setMember(member);
             favorite.setPost(post);
+
+            post.addFavoriteCount(); //거래글의 관심 수 추가
+
+            salesPostRepository.save(post);
             Long id = favoriteRepository.save(favorite).getId();
 
             dto.setMessage("성공적으로 관심목록에 추가됐습니다.");
-            dto.setData(id);
+            dto.setData(null);
 
             return new ResponseEntity<>(dto, HttpStatus.CREATED);
 
-        } else {
-            dto.setMessage("이미 관심목록에 추가된 거래글입니다.");
+        } else { //현재 회원이 같은 거래글을 이미 관심목록에 추가했다면
+            Favorite favorite = existingList.get(0);
+            favoriteRepository.delete(favorite);
+
+            dto.setMessage("성공적으로 관심목록에서 제거되었습니다.");
             dto.setData(null);
 
-            return new ResponseEntity<>(dto, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(dto, HttpStatus.OK);
         }
     }
 
+    /**
+     * 회원의 관심목록을 가져옵니다.
+     * @return 관심목록에 있는 거래글들의 DTO 리스트
+     * @since 2023-03-05
+     */
+    @ApiOperation(value="관심목록 가져오기 요청", notes = "회원의 관심목록을 가져옵니다.")
     @GetMapping("/api/v1/favorites")
     public ResponseEntity<ResponseDto> getFavorites() {
 
@@ -92,7 +106,5 @@ public class MemberApiController {
         resDto.setData(postDtoList);
 
         return new ResponseEntity<>(resDto, HttpStatus.OK);
-
     }
-
 }

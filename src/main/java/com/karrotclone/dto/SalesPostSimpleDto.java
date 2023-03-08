@@ -18,8 +18,6 @@ import java.time.LocalDateTime;
  * @lastModified 2023-03-03
  */
 @Data
-@Builder
-@AllArgsConstructor
 @NoArgsConstructor
 public class SalesPostSimpleDto {
 
