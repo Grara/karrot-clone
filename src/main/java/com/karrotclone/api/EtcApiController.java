@@ -37,9 +37,13 @@ public class EtcApiController {
      * @createdBy 노민준
      */
     @ApiOperation(value="텍스트 암호화", notes = "일반텍스트를 JASYPT를 이용해 암호화하고 결과를 반환해줍니다.")
-    @PostMapping("/api/enc")
+    @PostMapping("/api/v1/enc")
     public String encodeToJasypt(String plainTxt){
         return encryptor.encrypt(plainTxt);
     }
 
+    @GetMapping("/api/v1/auth-test") //
+    public String authTest(){
+        return "Success";
+    }
 }

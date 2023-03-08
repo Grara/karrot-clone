@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .exceptionHandling().accessDeniedHandler(jwtAccessDeniedHandler)
                 .and()
                 .authorizeHttpRequests()
+                .antMatchers("/auth-test").hasRole("USER") //권한 테스트용
                 .antMatchers("/","/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/v1/verifyemail").permitAll()
                 .anyRequest().authenticated()

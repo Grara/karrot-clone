@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import javax.management.relation.Role;
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +45,11 @@ public class Member implements UserDetails {
         this.searchRange = 20000;
     }
 
-    public Member(String email, String password, List<GrantedAuthority> authorities, String nickName) {
+    public Member(String email, String password, Roles role, String nickName) {
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.nickName = nickName;
     }
 
     @Override //권한정보
@@ -60,21 +65,21 @@ public class Member implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 }
