@@ -13,7 +13,7 @@ public class RegisterDto {
     public String nickName;
 
     @Email(message = "올바르지 않은 양식입니다.")
-    @Pattern(regexp = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$")
+//    @Pattern(regexp = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$")
     @NotNull
     public String email;
 

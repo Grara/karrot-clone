@@ -7,6 +7,7 @@ import com.karrotclone.config.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -62,6 +63,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 .antMatchers("/","/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/v1/verifyemail").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
