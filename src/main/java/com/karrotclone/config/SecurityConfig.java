@@ -7,6 +7,7 @@ import com.karrotclone.config.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -55,6 +56,8 @@ public class SecurityConfig {
                 .and()
                 .cors()
                 .disable()
+                .csrf()
+                .disable()
                 .httpBasic()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and()
@@ -63,6 +66,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests()
                 .antMatchers("/auth-test").hasRole("USER") //권한 테스트용
                 .antMatchers("/","/**").permitAll()
+//                .antMatchers(HttpMethod.GET, "api/v1/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
