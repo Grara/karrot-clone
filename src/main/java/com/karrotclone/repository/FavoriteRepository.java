@@ -3,10 +3,12 @@ package com.karrotclone.repository;
 import com.karrotclone.domain.Favorite;
 import com.karrotclone.domain.Member;
 import com.karrotclone.domain.SalesPost;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.awt.print.Pageable;
 import java.util.List;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
@@ -19,8 +21,8 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
      */
     @Query("SELECT f " +
             "FROM Favorite f " +
-            "JOIN FETCH f.post p " +
-            "JOIN FETCH p.imageUrls " +
+            "LEFT JOIN FETCH f.post p " +
+            "LEFT JOIN FETCH p.imageUrls " +
             "WHERE f.member = :member AND p.isHide != true")
     List<Favorite> findListByMember(@Param("member") Member member);
 }

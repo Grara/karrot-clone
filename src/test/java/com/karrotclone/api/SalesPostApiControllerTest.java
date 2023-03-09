@@ -49,36 +49,8 @@ class SalesPostApiControllerTest {
 
     @BeforeEach
     void setUp() {
-        user = memberRepository.findByNickName("user").get(); //임시 멤버
-
-    }
-
-
-    @Test
-    void 기본테스트() throws Exception {
-
-        SalesPostDataForm form = SalesPostDataForm.builder()
-                .title("아아")
-                .category(Category.BOOK)
-                .price(10000)
-                .isNegoAvailable(false)
-                .content("팔아요")
-                .rangeStep(RangeStep.VERY_CLOSE)
-                .build();
-
-        SalesPost post = SalesPost.createByFormAndMember(form, user);
-        post.getImageUrls().add("없음");
-
-        Long id = salesPostRepository.save(post).getId();
-
-        MultiValueMap<String, String> info = new LinkedMultiValueMap<>();
-        info.add("id", Long.toString(id));
-
-        mockMvc.perform(get("/api/v1/post/" + Long.toString(id))
-                        .params(info))
-                        .andExpect(status().isOk())
-                        .andDo(print());
-
+        if(user == null)
+            user = memberRepository.findByNickName("user").get(); //임시 멤버
     }
 
     @Test
@@ -220,24 +192,12 @@ class SalesPostApiControllerTest {
 
     @Test
     void 홈화면_숨기기_적용_테스트()throws Exception {
-        SalesPostDataForm form = SalesPostDataForm.builder()
-                .title("아아")
-                .category(Category.BOOK)
-                .price(10000)
-                .isNegoAvailable(false)
-                .content("팔아요")
-                .rangeStep(RangeStep.VERY_CLOSE) //최소 탐색 범위
-                .build();
+        SalesPostDataForm form = createTestForm();
 
         SalesPost post = SalesPost.createByFormAndMember(form, user);
         String id = salesPostRepository.save(post).getId().toString();
 
-        MultiValueMap<String, String> info = new LinkedMultiValueMap<>();
-        //info.add("id", Long.toString(id));
-        for (int i = 1; i <= 2; i++) {
-            SalesPost postt = SalesPost.createByFormAndMember(form, user);
-            salesPostRepository.save(postt);
-        }
+        createAndSavePost(form, user, 2);
 
         mockMvc.perform(post("/api/v1/post/" + id + "/change-hide"))
                 .andExpect(status().isOk())
@@ -251,38 +211,6 @@ class SalesPostApiControllerTest {
     }
 
     @Test
-    void 판매자_판매글목록_숨기기_적용_테스트()throws Exception{
-        SalesPostDataForm form = SalesPostDataForm.builder()
-                .title("아아")
-                .category(Category.BOOK)
-                .price(10000)
-                .isNegoAvailable(false)
-                .content("팔아요")
-                .rangeStep(RangeStep.VERY_CLOSE) //최소 탐색 범위
-                .build();
-
-        SalesPost post = SalesPost.createByFormAndMember(form, user);
-        String id = salesPostRepository.save(post).getId().toString();
-
-        MultiValueMap<String, String> info = new LinkedMultiValueMap<>();
-        //info.add("id", Long.toString(id));
-        for (int i = 1; i <= 2; i++) {
-            SalesPost postt = SalesPost.createByFormAndMember(form, user);
-            salesPostRepository.save(postt);
-        }
-
-        mockMvc.perform(post("/api/v1/post/" + id + "/change-hide"))
-                .andExpect(status().isOk())
-                .andDo(print());
-
-        //총 3개의 글을 저장했고 1개를 숨겼으니 2개가 조회되야함
-        mockMvc.perform(get("/api/v1/post/seller-list?page=0&nickName=user"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.numberOfElements").value(2))
-                .andDo(print());
-    }
-
-    @Test
     void 판매자_판매글목록_판매자이름_null_테스트()throws Exception{
         mockMvc.perform(get("/api/v1/post/seller-list"))
                 .andExpect(status().isBadRequest())
@@ -290,8 +218,223 @@ class SalesPostApiControllerTest {
     }
 
     @Test
-    void 거래글_상태변경_테스트()throws Exception{
-        SalesPostDataForm form = SalesPostDataForm.builder()
+    void 거래글_삭제()throws Exception{
+        SalesPostDataForm form = createTestForm();
+
+        SalesPost post = SalesPost.createByFormAndMember(form, user);
+        Long id = salesPostRepository.save(post).getId();
+
+        createAndSavePost(form, user, 3);
+
+        mockMvc.perform(delete("/api/v1/post/" + id)) //삭제 요청
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        //4개 중 1개 삭제했으니 3개 조회되야함
+        mockMvc.perform(get("/api/v1/post/home-list"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.numberOfElements").value(3))
+                .andDo(print());
+    }
+
+    @Test
+    void 관심변경()throws Exception{
+
+        SalesPostDataForm form = createTestForm();
+        
+        //1번 거래글
+        SalesPost post1 = SalesPost.createByFormAndMember(form, user);
+        Long id1 = salesPostRepository.save(post1).getId();
+        
+        //2번 거래글
+        SalesPost post2 = SalesPost.createByFormAndMember(form, user);
+        Long id2 = salesPostRepository.save(post2).getId();
+
+        createAndSavePost(form, user, 3); //쩌리 3개 추가
+
+        //1번 관심추가
+        mockMvc.perform(post("/api/v1/favorites")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(id1)))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        //2번 관심추가
+        mockMvc.perform(post("/api/v1/favorites")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(id2)))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        //2번 관심 해제
+        mockMvc.perform(post("/api/v1/favorites")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(id2)))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        //1개만 관심목록에 떠야함
+        mockMvc.perform(get("/api/v1/favorites"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andDo(print());
+
+    }
+
+    @Test
+    void 판매자_판매_목록_가져오기()throws Exception{
+
+        //판매중 3개, 예약중 3개, 거래완료 3개 만든 후
+        //각 상태마다 1개씩 숨기기 설정
+
+        SalesPostDataForm form = createTestForm();
+
+        createAndSavePost(form, user, 2);
+
+        SalesPost post = SalesPost.createByFormAndMember(form, user);
+        Long id1 = salesPostRepository.save(post).getId();
+
+        mockMvc.perform(post("/api/v1/post/"+id1+"/change-hide"))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        //예약중 3개 만들고 1개는 숨기기
+        for(int i = 0; i < 3; i++){
+            SalesPost postt = SalesPost.createByFormAndMember(form, user);
+            Long id = salesPostRepository.save(postt).getId();
+
+            mockMvc.perform(post("/api/v1/post/"+id+"/change-state")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(mapper.writeValueAsString(SalesState.RESERVE)))
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            if(i == 2){
+                mockMvc.perform(post("/api/v1/post/"+id+"/change-hide"))
+                        .andExpect(status().isOk())
+                        .andDo(print());
+            }
+        }
+
+        //거래완료 3개 만들고 1개 숨기기
+        for(int i = 0; i < 3; i++){
+            SalesPost postt = SalesPost.createByFormAndMember(form, user);
+            Long id = salesPostRepository.save(postt).getId();
+
+            mockMvc.perform(post("/api/v1/post/"+id+"/change-state")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(SalesState.COMPLETE)))
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            if(i == 2){
+                mockMvc.perform(post("/api/v1/post/"+id+"/change-hide"))
+                        .andExpect(status().isOk())
+                        .andDo(print());
+            }
+        }
+
+        //판매자의 전체글 가져오기
+        //숨긴 글을 제외하고 6개를 가져와야 함
+        mockMvc.perform(get("/api/v1/post/seller-list?nickName=user"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.data.numberOfElements").value(6))
+                        .andDo(print());
+
+        //판매자의 전체글 가져오기
+        //숨기기를 제외한 판매중, 예약중 합쳐서 총 4개를 가져와야 함
+        mockMvc.perform(get("/api/v1/post/seller-list?nickName=user&salesState=DEFAULT"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.numberOfElements").value(4))
+                .andDo(print());
+
+        //판매자의 전체글 가져오기
+        //숨기기를 제외한 거래완료 2개를 가져와야 함
+        mockMvc.perform(get("/api/v1/post/seller-list?nickName=user&salesState=COMPLETE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.numberOfElements").value(2))
+                .andDo(print());
+
+    }
+
+    @Test
+    void 내_판매_목록_가져오기()throws Exception{
+
+        //판매중 3개, 예약중 3개, 거래완료 3개 만든 후
+        //각 상태마다 1개씩 숨기기 설정
+
+        SalesPostDataForm form = createTestForm();
+
+        createAndSavePost(form, user, 2);
+
+        SalesPost post = SalesPost.createByFormAndMember(form, user);
+        Long id1 = salesPostRepository.save(post).getId();
+
+        mockMvc.perform(post("/api/v1/post/"+id1+"/change-hide"))
+                .andExpect(status().isOk())
+                .andDo(print());
+
+        //예약중 3개 만들고 1개는 숨기기
+        for(int i = 0; i < 3; i++){
+            SalesPost postt = SalesPost.createByFormAndMember(form, user);
+            Long id = salesPostRepository.save(postt).getId();
+
+            mockMvc.perform(post("/api/v1/post/"+id+"/change-state")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(SalesState.RESERVE)))
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            if(i == 2){
+                mockMvc.perform(post("/api/v1/post/"+id+"/change-hide"))
+                        .andExpect(status().isOk())
+                        .andDo(print());
+            }
+        }
+
+        //거래완료 3개 만들고 1개 숨기기
+        for(int i = 0; i < 3; i++){
+            SalesPost postt = SalesPost.createByFormAndMember(form, user);
+            Long id = salesPostRepository.save(postt).getId();
+
+            mockMvc.perform(post("/api/v1/post/"+id+"/change-state")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(mapper.writeValueAsString(SalesState.COMPLETE)))
+                    .andExpect(status().isOk())
+                    .andDo(print());
+
+            if(i == 2){
+                mockMvc.perform(post("/api/v1/post/"+id+"/change-hide"))
+                        .andExpect(status().isOk())
+                        .andDo(print());
+            }
+        }
+
+        //내 판매중인 글 가져오기
+        //숨긴 글을 제외하고 판매중, 예약중 합쳐서 4개를 가져와야 함
+        mockMvc.perform(get("/api/v1/post/my-sales-list?"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.numberOfElements").value(4))
+                .andDo(print());
+
+        //내 거래완료 글 가져오기
+        //숨기기를 제외한 거래완료 2개를 가져와야 함
+        mockMvc.perform(get("/api/v1/post/my-sales-list?salesState=COMPLETE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.numberOfElements").value(2))
+                .andDo(print());
+
+        //내 숨긴 글 가져오기
+        //숨기기글은 거래상태 관계없이 3개를 가져와야 함
+        mockMvc.perform(get("/api/v1/post/my-sales-list?isHide=true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.numberOfElements").value(3))
+                .andDo(print());
+
+    }
+
+    private SalesPostDataForm createTestForm(){
+        return SalesPostDataForm.builder()
                 .title("아아")
                 .category(Category.BOOK)
                 .price(10000)
@@ -299,28 +442,12 @@ class SalesPostApiControllerTest {
                 .content("팔아요")
                 .rangeStep(RangeStep.VERY_CLOSE) //최소 탐색 범위
                 .build();
-
-        SalesPost post = SalesPost.createByFormAndMember(form, user);
-        String id = salesPostRepository.save(post).getId().toString();
-
-        MultiValueMap<String, String> info = new LinkedMultiValueMap<>();
-        //info.add("id", Long.toString(id));
-        for (int i = 1; i <= 2; i++) {
-            SalesPost postt = SalesPost.createByFormAndMember(form, user);
-            salesPostRepository.save(postt);
-        }
-
-        mockMvc.perform(post("/api/v1/post/" + id + "/change-state")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(SalesState.COMPLETE)))
-                .andExpect(status().isOk())
-                .andDo(print());
-
-        //총 3개의 글을 저장했고 1개가 거래완료이니 2개가 조회되야함
-        mockMvc.perform(get("/api/v1/post/home-list"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.numberOfElements").value(2))
-                .andDo(print());
     }
 
+    private void createAndSavePost(SalesPostDataForm form, Member member, int n){
+        for (int i = 0; i < n; i++) {
+            SalesPost postt = SalesPost.createByFormAndMember(form, member);
+            salesPostRepository.save(postt);
+        }
+    }
 }

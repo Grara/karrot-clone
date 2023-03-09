@@ -179,6 +179,10 @@ public class SalesPostApiController {
 
         Member member = tempMemberRepository.findByNickName("user").get();
 
+        if(condition.getSalesState() == null){ //파라미터 입력이 없다면 거래상태는 판매중으로
+            condition.setSalesState(SalesState.DEFAULT);
+        }
+
         if(condition.getIsHide() == null) //숨김여부가 null이면 기본적으로 false 설정
             condition.setIsHide(false);
 

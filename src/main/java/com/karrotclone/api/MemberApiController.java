@@ -15,6 +15,7 @@ import com.karrotclone.service.auth.RegisterService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -95,7 +97,7 @@ public class MemberApiController {
             resDto.setMessage("성공적으로 관심목록에 추가됐습니다.");
             resDto.setData(null);
 
-            return new ResponseEntity<>(resDto, HttpStatus.CREATED);
+            return new ResponseEntity<>(resDto, HttpStatus.OK);
 
         } else { //현재 회원이 같은 거래글을 이미 관심목록에 추가했다면
             Favorite favorite = existingList.get(0);
@@ -115,7 +117,7 @@ public class MemberApiController {
      */
     @ApiOperation(value="관심목록 가져오기 요청", notes = "회원의 관심목록을 가져옵니다.")
     @GetMapping("/api/v1/favorites")
-    public ResponseEntity<ResponseDto> getFavorites() {
+    public ResponseEntity<ResponseDto> getFavorites(Pageable pageable) {
 
         ResponseDto resDto = new ResponseDto();
 
