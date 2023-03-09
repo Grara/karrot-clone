@@ -73,7 +73,7 @@ public class MemberApiController {
     @PostMapping("/api/v1/favorites")
     public ResponseEntity<ResponseDto> switchFavorite(@RequestBody Long postId) {
 
-        ResponseDto dto = new ResponseDto();
+        ResponseDto resDto = new ResponseDto();
 
         Member member = memberRepository.findByNickName("user").get();
 
@@ -92,19 +92,19 @@ public class MemberApiController {
             salesPostRepository.save(post);
             Long id = favoriteRepository.save(favorite).getId();
 
-            dto.setMessage("성공적으로 관심목록에 추가됐습니다.");
-            dto.setData(null);
+            resDto.setMessage("성공적으로 관심목록에 추가됐습니다.");
+            resDto.setData(null);
 
-            return new ResponseEntity<>(dto, HttpStatus.CREATED);
+            return new ResponseEntity<>(resDto, HttpStatus.CREATED);
 
         } else { //현재 회원이 같은 거래글을 이미 관심목록에 추가했다면
             Favorite favorite = existingList.get(0);
             favoriteRepository.delete(favorite);
 
-            dto.setMessage("성공적으로 관심목록에서 제거되었습니다.");
-            dto.setData(null);
+            resDto.setMessage("성공적으로 관심목록에서 제거되었습니다.");
+            resDto.setData(null);
 
-            return new ResponseEntity<>(dto, HttpStatus.OK);
+            return new ResponseEntity<>(resDto, HttpStatus.OK);
         }
     }
 

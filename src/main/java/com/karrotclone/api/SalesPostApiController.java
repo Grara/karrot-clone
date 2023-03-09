@@ -16,9 +16,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,16 +46,20 @@ public class SalesPostApiController {
      *
      * @param form 생성할 판매글 데이터 폼
      * @return 생성한 판매글의 ID값
-     * @cretedBy 노민준
-     * @lastModified 2023-03-06
-     * @since 2023-02-23
+     * @lastModified 2023-03-09 노민준
      */
     @ApiOperation(value = "거래글 생성 요청",
             notes = "제출한 데이터를 바탕으로 거래글을 생성합니다. 성공적으로 생성됐을 경우 생성된 거래글의 ID값을 반환합니다. swagger에서 제대로 동작 안함, 다른 API툴로 시도하길 바람")
     @PostMapping("/api/v1/post")
-    public ResponseEntity<ResponseDto> createSalesPost(SalesPostDataForm form) throws IOException {
+    public ResponseEntity<ResponseDto> createSalesPost(@Valid SalesPostDataForm form, BindingResult bindingResult) throws IOException {
 
-        ResponseDto dto = new ResponseDto();
+        ResponseDto resDto = new ResponseDto();
+
+        if(bindingResult.hasErrors()){
+            resDto.setMessage("제출한 데이터에 문제가 있습니다. data는 오류정보입니다.");
+            resDto.setData(bindingResult.getAllErrors());
+            return new ResponseEntity<>(resDto, HttpStatus.BAD_REQUEST);
+        }
 
         try {
             Member member = //임시 멤버 사용
@@ -69,14 +75,13 @@ public class SalesPostApiController {
 
             Long id = salesPostRepository.save(post).getId(); //거래글 저장 후 생성된 ID값
 
-            dto.setData(id);
-            dto.setMessage("거래글이 성공적으로 생성되었습니다. data는 거래글의 id입니다.");
-            return new ResponseEntity<>(dto, HttpStatus.CREATED);
+            resDto.setMessage("거래글이 성공적으로 생성되었습니다. data는 거래글의 id입니다.");
+            resDto.setData(id);
+            return new ResponseEntity<>(resDto, HttpStatus.CREATED);
 
         } catch (IllegalArgumentException e) {
-            dto.setData(e.getMessage());
-            dto.setMessage("거래글의 생성에 실패했습니다. data는 에러메시지 입니다.");
-            return new ResponseEntity<>(dto, HttpStatus.BAD_REQUEST);
+            resDto.setMessage("거래글의 생성에 실패했습니다. 오류메시지 : " + e.getMessage());
+            return new ResponseEntity<>(resDto, HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -107,11 +112,11 @@ public class SalesPostApiController {
         //상세페이지 DTO안에 거래글 리스트 추가
         detailDto.setPostsFromSeller(postsFromSeller);
 
-        ResponseDto responseDto = new ResponseDto();
-        responseDto.setMessage("id에 해당하는 거래글의 정보를 정상적으로 가져왔습니다.");
-        responseDto.setData(detailDto);
+        ResponseDto resDto = new ResponseDto();
+        resDto.setMessage("id에 해당하는 거래글의 정보를 정상적으로 가져왔습니다.");
+        resDto.setData(detailDto);
 
-        return new ResponseEntity<>(responseDto, HttpStatus.OK);
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 
     /**
@@ -128,10 +133,10 @@ public class SalesPostApiController {
         Member member = //임시 멤버 사용
                 tempMemberRepository.findByNickName("user").orElseThrow(() -> new DomainNotFoundException("유저가 없습니다."));
 
-        ResponseDto dto = new ResponseDto();
-        dto.setMessage("거래 목록을 가져오는데 성공했습니다.");
-        dto.setData(salesPostRepository.findHomeList(member, condition, pageable));
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        ResponseDto resDto = new ResponseDto();
+        resDto.setMessage("거래 목록을 가져오는데 성공했습니다.");
+        resDto.setData(salesPostRepository.findHomeList(member, condition, pageable));
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
 
     }
 
@@ -146,19 +151,19 @@ public class SalesPostApiController {
     @GetMapping("/api/v1/post/seller-list")
     public ResponseEntity<ResponseDto> getSellerList(@ModelAttribute PostSellerSearchCondition condition, Pageable pageable){
 
-        ResponseDto dto = new ResponseDto();
+        ResponseDto resDto = new ResponseDto();
 
         if(!StringUtils.hasText(condition.getNickName())) {
-            dto.setMessage("판매자명은 필수입니다.");
-            return new ResponseEntity<>(dto, HttpStatus.BAD_REQUEST);
+            resDto.setMessage("판매자명은 필수입니다.");
+            return new ResponseEntity<>(resDto, HttpStatus.BAD_REQUEST);
         }
 
         Slice<SalesPostSimpleDto> result = salesPostRepository.findAllListBySeller(condition, pageable);
 
-        dto.setMessage("해당 판매자의 판매글 목록을 성공적으로 가져왔습니다.");
-        dto.setData(result);
+        resDto.setMessage("해당 판매자의 판매글 목록을 성공적으로 가져왔습니다.");
+        resDto.setData(result);
 
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 
     /**
@@ -183,11 +188,11 @@ public class SalesPostApiController {
 
         Slice<SalesPostSimpleDto> result = salesPostRepository.findMySalesList(member, condition, pageable);
 
-        ResponseDto dto = new ResponseDto();
-        dto.setMessage("성공적으로 나의 판매글 목록을 가져왔습니다.");
-        dto.setData(result);
+        ResponseDto resDto = new ResponseDto();
+        resDto.setMessage("성공적으로 나의 판매글 목록을 가져왔습니다.");
+        resDto.setData(result);
 
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 
     /**
@@ -195,11 +200,18 @@ public class SalesPostApiController {
      * @param id 변경할 거래글의 id
      * @param form 적용할 폼 데이터
      * @return 거래글의 id
-     * @since 2023-03-06
+     * @lastModified 2023-03-09 노민준
      */
     @ApiOperation(value="거래글 수정", notes="거래글의 정보를 수정합니다. swagger에서 제대로 동작 안함, 다른 API툴로 시도하길 바람")
     @PatchMapping("/api/v1/post/{id}")
-    public ResponseEntity<ResponseDto> updatePost(SalesPostDataForm form, @PathVariable("id")Long id) throws IOException{
+    public ResponseEntity<ResponseDto> updatePost(@Valid SalesPostDataForm form, BindingResult bindingResult, @PathVariable("id")Long id) throws IOException{
+        ResponseDto resDto = new ResponseDto();
+
+        if(bindingResult.hasErrors()){
+            resDto.setMessage("제출한 데이터에 문제가 있습니다. data는 오류정보입니다.");
+            resDto.setData(bindingResult.getAllErrors());
+            return new ResponseEntity<>(resDto, HttpStatus.BAD_REQUEST);
+        }
 
         SalesPost post =
                 salesPostRepository.findById(id).orElseThrow(() -> new DomainNotFoundException("id에 해당하는 거래글이 없습니다"));
@@ -222,11 +234,11 @@ public class SalesPostApiController {
 
         salesPostRepository.save(post);
 
-        ResponseDto dto = new ResponseDto();
-        dto.setMessage("거래글 수정에 성공했습니다. data는 거래글의 id입니다.");
-        dto.setData(id);
 
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        resDto.setMessage("거래글 수정에 성공했습니다. data는 거래글의 id입니다.");
+        resDto.setData(id);
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 
     /**
@@ -247,10 +259,10 @@ public class SalesPostApiController {
 
         salesPostRepository.save(post);
 
-        ResponseDto dto = new ResponseDto();
-        dto.setMessage("거래글의 판매 상태 변경에 성공했습니다. data는 현재 적용된 판매상태입니다.");
-        dto.setData(post.getSalesState());
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        ResponseDto resDto = new ResponseDto();
+        resDto.setMessage("거래글의 판매 상태 변경에 성공했습니다. data는 현재 적용된 판매상태입니다.");
+        resDto.setData(post.getSalesState());
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 
     /**
@@ -270,10 +282,10 @@ public class SalesPostApiController {
 
         SalesPost save = salesPostRepository.save(post);
 
-        ResponseDto dto = new ResponseDto();
-        dto.setMessage("거래글의 숨기기여부 변경에 성공했습니다. data는 현재 적용된 숨기기여부입니다.");
-        dto.setData(post.isHide());
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        ResponseDto resDto = new ResponseDto();
+        resDto.setMessage("거래글의 숨기기여부 변경에 성공했습니다. data는 현재 적용된 숨기기여부입니다.");
+        resDto.setData(post.isHide());
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 
     /**
@@ -293,9 +305,9 @@ public class SalesPostApiController {
 
         salesPostRepository.delete(post);
 
-        ResponseDto dto = new ResponseDto();
-        dto.setMessage("거래글 삭제에 성공했습니다.");
-        dto.setData(true);
-        return new ResponseEntity<>(dto, HttpStatus.OK);
+        ResponseDto resDto = new ResponseDto();
+        resDto.setMessage("거래글 삭제에 성공했습니다.");
+        resDto.setData(true);
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 }

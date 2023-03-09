@@ -99,7 +99,6 @@ public class SalesPost {
         post.setImageUrls(new ArrayList<>());
 
         if(form.getPreferPlace() != null){ //생성요청폼에 거래선호 장소를 지정한 경우
-            Coordinate.validateNotNull(form.getPreferPlace()); //선호장소의 필드에 모두 값이 있는지 체크
             post.setTradePlace(form.getPreferPlace());
             post.setHasPreferPlace(true);
         }else{ //안했을 경우 회원의 기본 동네위치로 설정
@@ -125,7 +124,6 @@ public class SalesPost {
         setOpenRange(form.getRangeStep().getDistance());
 
         if(form.getPreferPlace() != null){ //생성요청폼에 거래선호 장소를 지정한 경우
-            Coordinate.validateNotNull(form.getPreferPlace()); //선호장소의 필드에 모두 값이 있는지 체크
             setTradePlace(form.getPreferPlace());
             setHasPreferPlace(true);
         }else{ //안했을 경우 회원의 기본 동네위치로 설정
