@@ -44,6 +44,11 @@ public class AwsUtil {
         return amazonS3Client.getUrl(BUCKET_NAME, saveName).toString();
     }
 
+    /**
+     * 해당 url의 이미지파일을 S3에서 삭제합니다.
+     * @param url 삭제할 이미지의 url
+     * @lastModified 2023-03-09 노민준
+     */
     public void deleteAtS3(String url){
 
         int idx = url.lastIndexOf("/"); //마지막 "/"의 위치

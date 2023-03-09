@@ -71,10 +71,8 @@ public class SalesPost {
         굳이 넣는 이유는 판매자의 다른글 불러오기할 때 N+1을 막기위해 이미지 url을 페치조인하는데
         이미지url이 아무것도 없으면 거래글 조회가 안됨
         */
-        if(getImageUrls() == null || getImageUrls().isEmpty()){
+        if(getImageUrls() == null)
             setImageUrls(new ArrayList<>());
-            getImageUrls().add("없음");
-        }
     }
 
     /**
@@ -147,6 +145,16 @@ public class SalesPost {
 
     public void addChatCount(){ //채팅 수 추가
         this.chatCount++;
+    }
+
+    public void reduceViews() { this.views--; }
+
+    public void reduceFavoriteCount(){ //관심 수 추가
+        this.favoriteUserCount--;
+    }
+
+    public void reduceChatCount(){ //채팅 수 추가
+        this.chatCount--;
     }
 
 }

@@ -33,7 +33,7 @@ public class SalesPostSimpleDto {
 
     @QueryProjection
     public SalesPostSimpleDto(SalesPost post){
-        if(!post.getImageUrls().get(0).equals("없음")){
+        if(!post.getImageUrls().isEmpty()){
             this.imageUrl = post.getImageUrls().get(0);
         }
         this.id = post.getId();

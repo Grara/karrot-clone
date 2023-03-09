@@ -130,7 +130,7 @@ public class SalesPostApiController {
 
         ResponseDto dto = new ResponseDto();
         dto.setMessage("거래 목록을 가져오는데 성공했습니다.");
-        dto.setData(salesPostRepository.findListWithSlice(member, condition, pageable));
+        dto.setData(salesPostRepository.findHomeList(member, condition, pageable));
         return new ResponseEntity<>(dto, HttpStatus.OK);
 
     }

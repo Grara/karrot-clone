@@ -40,7 +40,7 @@ public class SalesPostDetailDto {
     private int favoriteUserCount; //관심수
     private int chatCount; //채팅수
     private Coordinate preferPlace; //선호장소(선택)
-    private List<SalesPostSimpleDto> postsFromSeller; //판매자가 등록한 다른 판매글
+    private List<SalesPostSimpleDto> postsFromSeller = new ArrayList<>(); //판매자가 등록한 다른 판매글
 
     public SalesPostDetailDto(SalesPost post) {
         this.nickName = post.getMember().getNickName();
@@ -56,8 +56,8 @@ public class SalesPostDetailDto {
         this.favoriteUserCount = post.getFavoriteUserCount();
         this.chatCount = post.getChatCount();
 
-        if(!post.getImageUrls().get(0).equals("없음")){ //이미지가 있을 경우
-            this.imageUrls = post.getImageUrls();
+        for(String url : post.getImageUrls()){ //이미지 url 추가
+            this.imageUrls.add(url);
         }
 
         if(post.isHasPreferPlace()){ //거래글에 거래 선호장소를 지정했을 경우

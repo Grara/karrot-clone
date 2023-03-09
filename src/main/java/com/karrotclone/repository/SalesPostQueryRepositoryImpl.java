@@ -1,12 +1,11 @@
 package com.karrotclone.repository;
 
-import com.karrotclone.domain.Member;
-import com.karrotclone.domain.QMember;
-import com.karrotclone.domain.QSalesPost;
-import com.karrotclone.domain.SalesPost;
+import com.karrotclone.domain.*;
 import com.karrotclone.domain.enums.SalesState;
 import com.karrotclone.dto.*;
+import com.querydsl.core.types.QList;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -44,17 +43,18 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param member 판매자
      * @param id     중복되면 안되는 id
      * @return 찾아낸 거래글 리스트
-     * @since 2023-02-28
+     * @lastModified 2023-03-09 노민준
      */
     @Override
     public List<SalesPost> findTop4ListBySeller(Member member, Long id) {
         return em.createQuery("SELECT s " +
                         "FROM SalesPost s " +
-                        "JOIN FETCH s.imageUrls " + //이미지 url 가져올 때 N+1 방지
-                        "WHERE s.id != :id AND s.salesState != :salesState AND s.isHide != true " +
+                        "LEFT JOIN FETCH s.imageUrls " + //이미지 url 가져올 때 N+1 방지
+                        "WHERE s.id != :id AND s.salesState != :salesState AND s.isHide != true AND s.member = :member " +
                         "ORDER BY s.id DESC", SalesPost.class)
                 .setParameter("id", id)
                 .setParameter("salesState", SalesState.COMPLETE)
+                .setParameter("member", member)
                 .setMaxResults(4)
                 .getResultList();
     }
@@ -65,15 +65,15 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param condition 검색 조건
      * @param pageable 요청한 페이지 정보
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastMidified 2023-03-07 노민준
+     * @lastModified 2023-03-09 노민준
      */
     @Override
-    public Slice<SalesPostSimpleDto> findListWithSlice(Member member, PostHomeSearchCondition condition, Pageable pageable) {
+    public Slice<SalesPostSimpleDto> findHomeList(Member member, PostHomeSearchCondition condition, Pageable pageable) {
 
         List<SalesPost> postList = em.createQuery("SELECT s " +
                         "FROM SalesPost s " +
-                        "JOIN FETCH s.imageUrls " +
-                        createWhereFromCondition(member, condition) +
+                        "LEFT JOIN FETCH s.imageUrls " +
+                        homeListCondition(member, condition) +
                         " ORDER BY s.id DESC", SalesPost.class) //최신순으로 정렬
                 .setFirstResult((int) pageable.getOffset())
                 .setMaxResults(pageable.getPageSize())
@@ -93,14 +93,16 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param condition 검색 조건
      * @param pageable 페이징 파라미터
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastModified 2023-03-07 노민준
+     * @lastModified 2023-03-09 노민준
      */
     @Override
     public Slice<SalesPostSimpleDto> findAllListBySeller(PostSellerSearchCondition condition, Pageable pageable) {
+
         List<SalesPostSimpleDto> content = queryFactory
                 .select(new QSalesPostSimpleDto(salesPost))
                 .from(salesPost)
-                .leftJoin(salesPost.member, QMember.member).fetchJoin()
+                .leftJoin(salesPost.imageUrls, Expressions.stringPath("imageUrl")).fetchJoin() //이미지 url 리스트 페치조인
+                .leftJoin(salesPost.member, QMember.member).fetchJoin() //판매자 페치 조인
                 .where(
                         salesPost.member.nickName.eq(condition.getNickName()), //판매자명
                         stateEq(condition.getSalesState()), //거래상태
@@ -120,14 +122,15 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param condition 검색 조건
      * @param pageable 페이징 파라미터
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastModified 2023-03-07
+     * @lastModified 2023-03-09 노민준
      */
     @Override
     public Slice<SalesPostSimpleDto> findMySalesList(Member member, MySalesSearchCondition condition, Pageable pageable) {
         List<SalesPostSimpleDto> content = queryFactory
                 .select(new QSalesPostSimpleDto(salesPost))
                 .from(salesPost)
-                .leftJoin(salesPost.member, QMember.member).fetchJoin()
+                .leftJoin(salesPost.imageUrls, Expressions.stringPath("imageUrl")).fetchJoin()//이미지url 페치조인
+                .leftJoin(salesPost.member, QMember.member).fetchJoin() //판매자 페치조인
                 .where(
                         salesPost.member.eq(member),
                         stateEq(condition.getSalesState()),
@@ -145,15 +148,16 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param member 홈 화면을 사용중인 유저의 엔티티 객체
      * @param condition 검색조건
      * @return 완성된 WHERE문
-     * @since 2023-03-03
-     * @createdBy 노민준
+     * @lastModified 2023-03-09 노민준
      */
-    private String createWhereFromCondition(Member member, PostHomeSearchCondition condition) {
+    private String homeListCondition(Member member, PostHomeSearchCondition condition) {
 
-        String memberLaStart = Long.toString(member.getTown().getLatitude() - member.getSearchRange()); //멤버의 위도 - 탐지 거리
-        String memberLaEnd = Long.toString(member.getTown().getLatitude() + member.getSearchRange()); //멤버의 위도 + 탐지 거리
-        String memberLoStart = Long.toString(member.getTown().getLongitude() - member.getSearchRange()); //멤버의 경도 - 탐지 거리
-        String memberLoEnd = Long.toString(member.getTown().getLongitude() + member.getSearchRange()); //멤버의 경도 + 탐지 거리
+        Coordinate town = member.getTown();
+
+        String memberLaSearchFrom = Long.toString(town.getLatitude() - member.getSearchRange()); //멤버의 위도 - 탐지 거리
+        String memberLaSearchTo = Long.toString(town.getLatitude() + member.getSearchRange()); //멤버의 위도 + 탐지 거리
+        String memberLoSearchFrom = Long.toString(town.getLongitude() - member.getSearchRange()); //멤버의 경도 - 탐지 거리
+        String memberLoSearchTo = Long.toString(town.getLongitude() + member.getSearchRange()); //멤버의 경도 + 탐지 거리
 
         String memberLa = Long.toString(member.getTown().getLatitude()); //멤버의 위도
         String memberLo = Long.toString(member.getTown().getLongitude()); //멤버의 경도
@@ -161,10 +165,10 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
         String result = "WHERE " + //조건문 시작
 
                 //거래글의 위도가 멤버의 위도±탐지거리 안에 위치해야함
-                "s.tradePlace.latitude BETWEEN " + memberLaStart + " AND " + memberLaEnd +
+                "s.tradePlace.latitude BETWEEN " + memberLoSearchFrom + " AND " + memberLaSearchTo +
                 " AND " +
                 //거래글의 경도가 멤버의 경도±탐지거리 안에 위치해야함
-                "s.tradePlace.longitude BETWEEN " + memberLoStart + " AND " + memberLoEnd +
+                "s.tradePlace.longitude BETWEEN " + memberLoSearchFrom + " AND " + memberLoSearchTo +
                 " AND " +
                 //멤버의 위도가 거래글의 위도±탐지거리 안에 위치해야함
                 memberLa + " BETWEEN s.tradePlace.latitude - s.openRange AND s.tradePlace.latitude + s.openRange" +
@@ -194,7 +198,7 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
     /**
      * 거래글 상태에 따른 조건을 생성해줍니다. (쿼리DSL 사용 용도)
      * @param state 지정할 거래글 상태 조건
-     * @lastModified 2023-03-07 노민준
+     * @lastModified 2023-03-09 노민준
      */
     private BooleanExpression stateEq(SalesState state){
         if(state == null) return null; //거래상태가 조건으로 지정안되어있으면 조건무시
