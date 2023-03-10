@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Embeddable;
+import javax.validation.constraints.NotNull;
 
 /**
  * 위치의 좌표와 동네명, 유저가 지정한 별칭을 저장하는 클래스입니다.
@@ -17,21 +18,12 @@ import javax.persistence.Embeddable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Coordinate {
+    @NotNull(message = "위치정보는 null이거나, 모든 필드의 값이 채워져야합니다. 현재 위도는 null입니다")
     private Long latitude; //위도, 세로
+    @NotNull(message = "위치정보는 null이거나, 모든 필드의 값이 채워져야합니다. 현재 경도는 null입니다")
     private Long longitude; //경도, 가로
+    @NotNull(message = "위치정보는 null이거나, 모든 필드의 값이 채워져야합니다. 현재 행정구역명은 null입니다")
     private String townName; //공식 행정구역 이름 (읍, 면, 동)
+    @NotNull(message = "위치정보는 null이거나, 모든 필드의 값이 채워져야합니다. 현재 장소명은 null입니다")
     private String alias; //유저가 지정한 이름
-
-    /**
-     * 위치정보의 필드에 모두 값이 있는지 검증합니다. <br>
-     * null인 필드가 있다면 IllegalArgumentException를 발생
-     * @param coordinate 검증할 위치정보
-     * @throws IllegalArgumentException null인 필드가 있으면 발생
-     * @since 2023-03-03
-     */
-    public static void validateNotNull(Coordinate coordinate) throws IllegalArgumentException{
-        if(coordinate.latitude == null || coordinate.longitude == null || coordinate.townName == null || coordinate.alias == null){
-            throw new IllegalArgumentException("거래 선호장소는 완전히 null이거나 모든 필드에 값이 채워져야합니다.");
-        }
-    }
 }
