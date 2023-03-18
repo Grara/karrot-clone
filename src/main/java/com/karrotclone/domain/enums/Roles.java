@@ -1,5 +1,5 @@
 package com.karrotclone.domain.enums;
 
 public enum Roles {
-    USER, ADMIN
+    ROLE_USER, ROLE_ADMIN
 }

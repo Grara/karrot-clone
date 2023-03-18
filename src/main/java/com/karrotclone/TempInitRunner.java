@@ -25,7 +25,7 @@ public class TempInitRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        Member member = new Member("user", "ddd", "1234", Roles.USER, new Coordinate(0L,0L,"망원동", "망원역"));
+        Member member = new Member("user", "ddd", "1234", Roles.ROLE_USER, new Coordinate(0L,0L,"망원동", "망원역"));
         tempMemberRepository.save(member); //임시 멤버 생성
 
 

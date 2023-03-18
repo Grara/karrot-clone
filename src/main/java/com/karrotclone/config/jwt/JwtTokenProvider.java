@@ -44,8 +44,8 @@ public class JwtTokenProvider {
                 .build().parseClaimsJws(token).getBody();
     }
 
-    public String getUsername(String token){
-        return extracAllClaims(token).get("username", String.class);
+    public String getEmail(String token){
+        return extracAllClaims(token).get("email", String.class);
     }//Payload 에서 유저 이름을 가져온다.
 
     public Boolean isTokenExpired(String token){
@@ -54,16 +54,16 @@ public class JwtTokenProvider {
     }//토큰이 만료되었는지 확인
 
     public String generateAccessToken(Member member){
-        return doGenerateToken(member.getUsername(), ACCESS_TOKEN_EXPIRE_TIME);
+        return doGenerateToken(member.getEmail(), ACCESS_TOKEN_EXPIRE_TIME);
     }
 
     public String generateRefreshToken(Member member){
-        return doGenerateToken(member.getUsername(), REFRESH_TOKEN_EXPIRE_TIME);
+        return doGenerateToken(member.getEmail(), REFRESH_TOKEN_EXPIRE_TIME);
     }
 
-    public String doGenerateToken(String username, long expireTime){
+    public String doGenerateToken(String email, long expireTime){
         Claims claims = Jwts.claims();
-        claims.put("username", username);
+        claims.put("email", email);
 
         String jwt = Jwts.builder().setClaims(claims).setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expireTime))

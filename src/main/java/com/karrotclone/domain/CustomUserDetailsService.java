@@ -19,8 +19,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private final TempMemberRepository memberRepository;
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Member> _user = memberRepository.findByEmail(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<Member> _user = memberRepository.findByEmail(email);
         if(_user.isEmpty()){
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
         }
