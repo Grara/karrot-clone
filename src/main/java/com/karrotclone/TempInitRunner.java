@@ -10,6 +10,7 @@ import com.karrotclone.repository.TempMemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,12 +23,10 @@ public class TempInitRunner implements ApplicationRunner {
 
     private final TempMemberRepository tempMemberRepository;
     private final SalesPostRepository salesPostRepository;
-
+    private final PasswordEncoder passwordEncoder;
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        Member member = new Member("user", "ddd", "1234", Roles.ROLE_USER, new Coordinate(0L,0L,"망원동", "망원역"));
+        Member member = new Member("user", "ddd", passwordEncoder.encode("1234"), Roles.ROLE_USER, new Coordinate(0L,0L,"망원동", "망원역"));
         tempMemberRepository.save(member); //임시 멤버 생성
-
-
     }
 }

@@ -35,18 +35,18 @@ public class ApiExceptionHandler {
         return new ResponseEntity<>(resDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(Exception.class) //예측 못한 에러
-    public ResponseEntity<ResponseDto> handleUnknownException(Exception e){
+//    @ExceptionHandler(Exception.class) //예측 못한 에러
+//    public ResponseEntity<ResponseDto> handleUnknownException(Exception e){
 //        StackTraceElement[] stackTrace = e.getStackTrace();
 //        String result = "";
 //        for(StackTraceElement s : stackTrace){
 //            result += s.toString() + "\n";
 //        }
-
-        ResponseDto resDto = new ResponseDto();
-        resDto.setMessage("예측하지 못한 오류가 발생했습니다. 오류메시지 : " + e.getMessage());
-        resDto.setData(null);
-        return new ResponseEntity<>(resDto, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+//
+//        ResponseDto resDto = new ResponseDto();
+//        resDto.setMessage("예측하지 못한 오류가 발생했습니다. 오류메시지 : " + e.getMessage());
+//        resDto.setData(null);
+//        return new ResponseEntity<>(resDto, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
 
 }

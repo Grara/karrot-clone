@@ -18,9 +18,11 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,15 +71,14 @@ public class MemberApiController {
      * 거래글을 관심목록에 추가하거나, 이미 관심목록에 있다면 삭제합니다.
      * @param postId 거래글의 id
      * @return 생성된 Favorite id
-     * @lastModified 2023-03-07 노민준
+     * @lastModified 2023-03-18 노민준
      */
     @ApiOperation(value="관심목록 추가 or 삭제 요청", notes = "거래글을 관심목록에 추가하거나, 이미 관심목록에 있다면 삭제합니다.")
     @PostMapping("/api/v1/favorites")
-    public ResponseEntity<ResponseDto> switchFavorite(@RequestBody Long postId) {
+    @RolesAllowed({"USER"})
+    public ResponseEntity<ResponseDto> switchFavorite(@RequestBody Long postId, @AuthenticationPrincipal Member member) {
 
         ResponseDto resDto = new ResponseDto();
-
-        Member member = memberRepository.findByNickName("user").get();
 
         SalesPost post =
                 salesPostRepository.findById(postId).orElseThrow(() -> new DomainNotFoundException("id에 해당하는 거래글이 없습니다."));
@@ -113,15 +114,14 @@ public class MemberApiController {
     /**
      * 회원의 관심목록을 가져옵니다.
      * @return 관심목록에 있는 거래글들의 DTO 리스트
-     * @since 2023-03-05
+     * @lastModified 2023-03-18 노민준
      */
     @ApiOperation(value="관심목록 가져오기 요청", notes = "회원의 관심목록을 가져옵니다.")
     @GetMapping("/api/v1/favorites")
-    public ResponseEntity<ResponseDto> getFavorites(Pageable pageable) {
+    @RolesAllowed({"USER"})
+    public ResponseEntity<ResponseDto> getFavorites(Pageable pageable, @AuthenticationPrincipal Member member) {
 
         ResponseDto resDto = new ResponseDto();
-
-        Member member = memberRepository.findByNickName("user").get();
 
         List<Favorite> favList = favoriteRepository.findListByMember(member);
 
