@@ -93,7 +93,7 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param condition 검색 조건
      * @param pageable 페이징 파라미터
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastModified 2023-03-09 노민준
+     * @lastModified 2023-03-18 노민준
      */
     @Override
     public Slice<SalesPostSimpleDto> findAllListBySeller(PostSellerSearchCondition condition, Pageable pageable) {
@@ -104,7 +104,7 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
                 .leftJoin(salesPost.imageUrls, Expressions.stringPath("imageUrl")).fetchJoin() //이미지 url 리스트 페치조인
                 .leftJoin(salesPost.member, QMember.member).fetchJoin() //판매자 페치 조인
                 .where(
-                        salesPost.member.nickName.eq(condition.getNickName()), //판매자명
+                        salesPost.member.email.eq(condition.getEmail()), //판매자명
                         stateEq(condition.getSalesState()), //거래상태
                         salesPost.isHide.eq(false)
                 )

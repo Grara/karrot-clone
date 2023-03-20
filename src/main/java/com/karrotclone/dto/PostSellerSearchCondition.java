@@ -9,6 +9,6 @@ import lombok.Data;
 
 @Data
 public class PostSellerSearchCondition {
-    private String nickName;
+    private String email;
     private SalesState salesState;
 }

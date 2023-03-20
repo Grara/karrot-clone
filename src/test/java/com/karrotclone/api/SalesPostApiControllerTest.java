@@ -17,6 +17,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -32,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @Transactional
+@WithUserDetails("ddd") //TempInitRunner에서 저장하는 기본 유저의 이메일
 class SalesPostApiControllerTest {
 
     @Autowired
@@ -336,21 +341,21 @@ class SalesPostApiControllerTest {
 
         //판매자의 전체글 가져오기
         //숨긴 글을 제외하고 6개를 가져와야 함
-        mockMvc.perform(get("/api/v1/post/seller-list?nickName=user"))
+        mockMvc.perform(get("/api/v1/post/seller-list?email=ddd"))
                         .andExpect(status().isOk())
                         .andExpect(jsonPath("$.data.numberOfElements").value(6))
                         .andDo(print());
 
         //판매자의 전체글 가져오기
         //숨기기를 제외한 판매중, 예약중 합쳐서 총 4개를 가져와야 함
-        mockMvc.perform(get("/api/v1/post/seller-list?nickName=user&salesState=DEFAULT"))
+        mockMvc.perform(get("/api/v1/post/seller-list?email=ddd&salesState=DEFAULT"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.numberOfElements").value(4))
                 .andDo(print());
 
         //판매자의 전체글 가져오기
         //숨기기를 제외한 거래완료 2개를 가져와야 함
-        mockMvc.perform(get("/api/v1/post/seller-list?nickName=user&salesState=COMPLETE"))
+        mockMvc.perform(get("/api/v1/post/seller-list?email=ddd&salesState=COMPLETE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.numberOfElements").value(2))
                 .andDo(print());

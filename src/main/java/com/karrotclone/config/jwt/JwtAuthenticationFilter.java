@@ -33,20 +33,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         final Cookie jwtToken = cookieUtil.getCookie(request, jwtTokenProvider.ACCESS_TOKEN_NAME);
         // 인증이 필요한 부분에 매번 이필터가 실행
-        String username = null;
+        String email = null;
         String jwt = null;
         String refreshJwt = null;
-        String refreshUname = null;
+        String refreshUserEmail = null;
         // 엑세스 토큰을 1차적으로 가져와서 쿠키에 저장한 뒤에, 만료 되었을시 리프레쉬 토큰 확인후 엑세스 토큰 재발급
         try{
             if(jwtToken != null){
                 jwt = jwtToken.getValue();
-                username = jwtTokenProvider.getUsername(jwt);
+                email = jwtTokenProvider.getEmail(jwt);
             } else{
                 logger.warn("Cannot find access token");
             }
-            if(username != null){
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if(email != null){
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                 if(jwtTokenProvider.validateToken(jwt)){
                     logger.info("validateToken : " + jwt);
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken
@@ -70,13 +70,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try{
             // 리프래쉬 토큰이 만료되지 않았을 때 레디스에서 유저 이름을 찾아서 액세스 토큰을 발급해 로그인
             if(refreshJwt != null){
-                refreshUname = redisUtil.getData(refreshJwt);
-                if(refreshUname.equals(jwtTokenProvider.getUsername(refreshJwt))){
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(refreshUname);
+                refreshUserEmail = redisUtil.getData(refreshJwt);
+                if(refreshUserEmail.equals(jwtTokenProvider.getEmail(refreshJwt))){
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(refreshUserEmail);
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null,userDetails.getAuthorities() );
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-                    Cookie newAccessToken = cookieUtil.creatCookie(jwtTokenProvider.ACCESS_TOKEN_NAME, jwtTokenProvider.doGenerateToken(refreshUname, jwtTokenProvider.ACCESS_TOKEN_EXPIRE_TIME));
+                    Cookie newAccessToken = cookieUtil.creatCookie(jwtTokenProvider.ACCESS_TOKEN_NAME, jwtTokenProvider.doGenerateToken(refreshUserEmail, jwtTokenProvider.ACCESS_TOKEN_EXPIRE_TIME));
                     response.addCookie(newAccessToken);
                 }
             } else{

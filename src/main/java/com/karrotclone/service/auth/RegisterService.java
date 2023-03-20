@@ -23,7 +23,7 @@ public class RegisterService {
         if(memberRepository.findByEmail(user.email).isPresent()){
             throw new IllegalArgumentException("Email Already Exist");
         }
-        Member member = new Member(user.nickName, user.email, passwordEncoder.encode(user.password), Roles.USER, user.town);
+        Member member = new Member(user.nickName, user.email, passwordEncoder.encode(user.password), Roles.ROLE_USER, user.town);
         memberRepository.save(member);
     }
 }

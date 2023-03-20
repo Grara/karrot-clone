@@ -1,5 +1,6 @@
-package com.karrotclone.domain;
+package com.karrotclone.service.auth;
 
+import com.karrotclone.domain.Member;
 import com.karrotclone.repository.TempMemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,15 +19,20 @@ import java.util.Optional;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final TempMemberRepository memberRepository;
+
+    /**
+     * 이메일로 DB에서 회원을 찾고 해당 회원(UserDetails)를 반환합니다.
+     * @param email 찾을 회원의 이메일
+     * @return 찾아낸 회원
+     * @throws UsernameNotFoundException 회원이 DB에 없을 경우
+     * @lastModified 2023-03-18 노민준
+     */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<Member> _user = memberRepository.findByEmail(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<Member> _user = memberRepository.findByEmail(email);
         if(_user.isEmpty()){
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
         }
-        Member user = _user.get();
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(user.getRole().toString()));
-        return new Member(user.getEmail(), user.getPassword(), user.getRole(), user.getNickName());
+        return _user.get();
     }
 }

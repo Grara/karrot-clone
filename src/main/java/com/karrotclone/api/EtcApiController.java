@@ -4,11 +4,13 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.karrotclone.domain.Member;
 import com.karrotclone.dto.ImageTestDto;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.jasypt.encryption.StringEncryptor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,8 +44,9 @@ public class EtcApiController {
         return encryptor.encrypt(plainTxt);
     }
 
-    @GetMapping("/api/v1/auth-test") //
-    public String authTest(){
-        return "Success";
+    //JWT 제대로 작동하는지 테스트용
+    @GetMapping("/api/v1/auth-test")
+    public String authTest(@AuthenticationPrincipal Member member){
+        return member.getEmail();
     }
 }

@@ -15,23 +15,13 @@ spring:
     password:
     driver-class-name: org.h2.Driver
 
-  h2:
-    console:
-      enabled: true
-
   jpa:
     hibernate:
       ddl-auto: create
-    properties:
-      hibernate:
-        format_sql: true
 
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-
-logging.level:
-  org.hibernate.SQL: debug
 
 jasypt:
   encryptor:
@@ -51,4 +41,3 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
-
