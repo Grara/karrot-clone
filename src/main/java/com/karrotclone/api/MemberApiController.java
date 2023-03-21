@@ -48,7 +48,7 @@ public class MemberApiController {
 
     @ApiOperation(value="회원가입 요청", notes="입력된 정보를 토대로 회원가입을 진행합니다.")
     @PostMapping("/api/v1/members")
-    public void register(final @Valid @RequestBody RegisterDto dto, BindingResult bindingResult){
+    public void register(final @Valid RegisterDto dto, BindingResult bindingResult){
         if (bindingResult.hasErrors()){
             System.out.println(" Incoming error ");
             return;

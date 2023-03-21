@@ -25,6 +25,7 @@ public class Member implements UserDetails {
     @Id @GeneratedValue
     @Column(name = "member_id")
     private Long id; //식별id값
+    private String profileUrl;
     private String nickName; //닉네임
     private String email; //이메일
     private String password; //비밀번호
