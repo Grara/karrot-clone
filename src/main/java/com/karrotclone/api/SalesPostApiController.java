@@ -1,10 +1,12 @@
 package com.karrotclone.api;
 
+import com.karrotclone.domain.Favorite;
 import com.karrotclone.domain.Member;
 import com.karrotclone.domain.SalesPost;
 import com.karrotclone.domain.enums.SalesState;
 import com.karrotclone.dto.*;
 import com.karrotclone.exception.DomainNotFoundException;
+import com.karrotclone.repository.FavoriteRepository;
 import com.karrotclone.repository.SalesPostRepository;
 import com.karrotclone.repository.TempMemberRepository;
 import com.karrotclone.utils.AwsUtil;
@@ -21,6 +23,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
@@ -43,21 +46,22 @@ public class SalesPostApiController {
     private final TempMemberRepository tempMemberRepository; //임시로 사용할 멤버 DAO객체
     private final SalesPostRepository salesPostRepository; //거래글 DAO
     private final AwsUtil awsUtil;
+    private final FavoriteRepository favoriteRepository;
 
     /**
      * 사용자가 입력한 데이터를 바탕으로 판매글을 생성합니다.
      *
      * @param form 생성할 판매글 데이터 폼
      * @return 생성한 판매글의 ID값
-     * @lastModified 2023-03-18 노민준
+     * @lastModified 2023-03-21 노민준
      */
     @ApiOperation(value = "거래글 생성 요청",
             notes = "제출한 데이터를 바탕으로 거래글을 생성합니다. 성공적으로 생성됐을 경우 생성된 거래글의 ID값을 반환합니다. swagger에서 제대로 동작 안함, 다른 API툴로 시도하길 바람")
     @PostMapping("/api/v1/post")
     @RolesAllowed({"USER"})
     public ResponseEntity<ResponseDto> createSalesPost(@Valid SalesPostDataForm form,
-                                                       BindingResult bindingResult,
-                                                       @AuthenticationPrincipal Member member) throws IOException {
+                                                       @ApiIgnore BindingResult bindingResult,
+                                                       @ApiIgnore @AuthenticationPrincipal Member member) throws IOException {
 
         ResponseDto resDto = new ResponseDto();
 
@@ -93,9 +97,7 @@ public class SalesPostApiController {
      * 거래글의 상세정보를 가져옵니다.
      * @param id 거래글의 id값
      * @return 거래글 상세정보 DTO
-     * @createdBy 노민준
-     * @lastModified 2023-03-03
-     * @since 2023-02-24
+     * @lastModified 2023-03-21 노민준
      */
     @ApiOperation(value = "거래글 상세페이지 정보 가져오기", notes = "id에 해당하는 거래글의 상세페이지 정보를 가져옵니다.")
     @GetMapping("/api/v1/post/{id}")
@@ -128,14 +130,14 @@ public class SalesPostApiController {
      * @param condition 검색 조건
      * @param pageable  페이징에 필요한 파라미터값, page=n 형식으로 보내면 됨
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastModified 2023-03-18 노민준
+     * @lastModified 2023-03-21 노민준
      */
     @ApiOperation(value = "홈화면 거래글 목록 가져오기", notes = "홈화면에 필요한 거래글 DTO 리스트를 가져옵니다. 페이징은 swagger에서 제대로 테스트 못함, 노션 참조 바람")
     @GetMapping("/api/v1/post/home-list")
     @RolesAllowed({"USER"})
     public ResponseEntity<ResponseDto> getHomeList(@ModelAttribute PostHomeSearchCondition condition,
-                                                   Pageable pageable,
-                                                   @AuthenticationPrincipal Member member) {
+                                                   @ApiIgnore Pageable pageable,
+                                                   @ApiIgnore @AuthenticationPrincipal Member member) {
 
         ResponseDto resDto = new ResponseDto();
         resDto.setMessage("거래 목록을 가져오는데 성공했습니다.");
@@ -149,11 +151,12 @@ public class SalesPostApiController {
      * @param condition 검색조건
      * @param pageable 페이징에 필요한 파라미터 정보
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastModified 2023-03-07 노민준
+     * @lastModified 2023-03-21 노민준
      */
     @ApiOperation(value = "판매자의 다른 거래글 가져오기", notes = "판매자의 다른 거래글을 가져옵니다. 페이징은 swagger에서 제대로 테스트 못함, 노션 참조 바람")
     @GetMapping("/api/v1/post/seller-list")
-    public ResponseEntity<ResponseDto> getSellerList(@ModelAttribute PostSellerSearchCondition condition, Pageable pageable){
+    public ResponseEntity<ResponseDto> getSellerList(@ModelAttribute PostSellerSearchCondition condition,
+                                                     @ApiIgnore Pageable pageable){
 
         ResponseDto resDto = new ResponseDto();
 
@@ -175,14 +178,14 @@ public class SalesPostApiController {
      * @param condition 검색조건
      * @param pageable 페이징 파라미터
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastModified 2023-03-18 노민준
+     * @lastModified 2023-03-21 노민준
      */
     @ApiOperation(value="나의 판매글 목록 가져오기", notes = "나의 판매글 목록을 가져옵니다. 페이징은 swagger에서 제대로 테스트 못함, 노션 참조 바람")
     @GetMapping("/api/v1/post/my-sales-list")
     @RolesAllowed({"USER"})
     public ResponseEntity<ResponseDto> getMySalesList(@ModelAttribute MySalesSearchCondition condition,
-                                                      Pageable pageable,
-                                                      @AuthenticationPrincipal Member member){
+                                                      @ApiIgnore Pageable pageable,
+                                                      @ApiIgnore @AuthenticationPrincipal Member member){
 
 
         if(condition.getSalesState() == null) { //파라미터 입력이 없다면 거래상태는 판매중으로
@@ -210,15 +213,15 @@ public class SalesPostApiController {
      * @param id 변경할 거래글의 id
      * @param form 적용할 폼 데이터
      * @return 거래글의 id
-     * @lastModified 2023-03-18 노민준
+     * @lastModified 2023-03-21 노민준
      */
     @ApiOperation(value="거래글 수정", notes="거래글의 정보를 수정합니다. swagger에서 제대로 동작 안함, 다른 API툴로 시도하길 바람")
     @PatchMapping("/api/v1/post/{id}")
     @RolesAllowed({"USER"})
     public ResponseEntity<ResponseDto> updatePost(@Valid SalesPostDataForm form,
-                                                  BindingResult bindingResult,
+                                                  @ApiIgnore BindingResult bindingResult,
                                                   @PathVariable("id")Long id,
-                                                  @AuthenticationPrincipal Member member) throws IOException{
+                                                  @ApiIgnore @AuthenticationPrincipal Member member) throws IOException{
         ResponseDto resDto = new ResponseDto();
 
         if(bindingResult.hasErrors()){
@@ -265,14 +268,14 @@ public class SalesPostApiController {
      * @param id 변경할 거래글 id
      * @param state 적용시킬 상태
      * @return 성공 시 true 반환
-     * @since 2023-03-18
+     * @lastModified 2023-03-21 노민준
      */
     @ApiOperation(value = "거래글의 판매 상태 변경", notes="거래글의 판매 상태를 변경합니다.")
     @PostMapping("/api/v1/post/{id}/change-state")
     @RolesAllowed({"USER"})
     public ResponseEntity<ResponseDto> changeState(@PathVariable("id")Long id,
                                                    @RequestBody SalesState state,
-                                                   @AuthenticationPrincipal Member member){
+                                                   @ApiIgnore @AuthenticationPrincipal Member member){
         ResponseDto resDto = new ResponseDto();
 
         SalesPost post =
@@ -297,13 +300,13 @@ public class SalesPostApiController {
      * 거래글의 숨기기 여부를 변경합니다.
      * @param id 변경할 거래글 id
      * @return 현재 적용된 숨기기 여부
-     * @since 2023-03-18
+     * @lastModified 2023-03-21 노민준
      */
     @ApiOperation(value="거래글의 숨기기 여부 변경", notes="거래글의 숨기기 여부를 변경합니다.")
     @PostMapping("/api/v1/post/{id}/change-hide")
     @RolesAllowed({"USER"})
     public ResponseEntity<ResponseDto> changeHide(@PathVariable("id")Long id,
-                                                  @AuthenticationPrincipal Member member){
+                                                  @ApiIgnore @AuthenticationPrincipal Member member){
 
         ResponseDto resDto = new ResponseDto();
         SalesPost post =
@@ -327,13 +330,13 @@ public class SalesPostApiController {
     /**
      * 거래글을 삭제합니다.
      * @param id 삭제할 거래글의 id
-     * @lastModified 2023-03-18 노민준
+     * @lastModified 2023-03-21 노민준
      */
     @ApiOperation(value = "거래글 삭제", notes="거래글을 삭제합니다.")
     @DeleteMapping("/api/v1/post/{id}")
     @RolesAllowed({"USER"})
     public ResponseEntity<ResponseDto> delete(@PathVariable("id") Long id,
-                                              @AuthenticationPrincipal Member member){
+                                              @ApiIgnore @AuthenticationPrincipal Member member){
         ResponseDto resDto = new ResponseDto();
 
         SalesPost post =
@@ -352,6 +355,76 @@ public class SalesPostApiController {
 
         resDto.setMessage("거래글 삭제에 성공했습니다.");
         resDto.setData(true);
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    /**
+     * 거래글을 관심목록에 추가하거나, 이미 관심목록에 있다면 삭제합니다.
+     * @param postId 거래글의 id
+     * @return 생성된 Favorite id
+     * @lastModified 2023-03-21 노민준
+     */
+    @ApiOperation(value="관심목록 추가 or 삭제 요청", notes = "거래글을 관심목록에 추가하거나, 이미 관심목록에 있다면 삭제합니다.")
+    @PostMapping("/api/v1/favorites")
+    @RolesAllowed({"USER"})
+    public ResponseEntity<ResponseDto> switchFavorite(@RequestBody Long postId, @ApiIgnore @AuthenticationPrincipal Member member) {
+
+        ResponseDto resDto = new ResponseDto();
+
+        SalesPost post =
+                salesPostRepository.findById(postId).orElseThrow(() -> new DomainNotFoundException("id에 해당하는 거래글이 없습니다."));
+
+        List<Favorite> existingList = favoriteRepository.findListByPostAndMember(post, member);
+
+        if (existingList.isEmpty()) {
+            Favorite favorite = new Favorite();
+            favorite.setMember(member);
+            favorite.setPost(post);
+
+            post.addFavoriteCount(); //거래글의 관심 수 추가
+
+            salesPostRepository.save(post);
+            Long id = favoriteRepository.save(favorite).getId();
+
+            resDto.setMessage("성공적으로 관심목록에 추가됐습니다.");
+            resDto.setData(null);
+
+            return new ResponseEntity<>(resDto, HttpStatus.OK);
+
+        } else { //현재 회원이 같은 거래글을 이미 관심목록에 추가했다면
+            Favorite favorite = existingList.get(0);
+            favoriteRepository.delete(favorite);
+
+            resDto.setMessage("성공적으로 관심목록에서 제거되었습니다.");
+            resDto.setData(null);
+
+            return new ResponseEntity<>(resDto, HttpStatus.OK);
+        }
+    }
+
+    /**
+     * 회원의 관심목록을 가져옵니다.
+     * @return 관심목록에 있는 거래글들의 DTO 리스트
+     * @lastModified 2023-03-21 노민준
+     */
+    @ApiOperation(value="관심목록 가져오기 요청", notes = "회원의 관심목록을 가져옵니다.")
+    @GetMapping("/api/v1/favorites")
+    @RolesAllowed({"USER"})
+    public ResponseEntity<ResponseDto> getFavorites(@ApiIgnore Pageable pageable, @ApiIgnore @AuthenticationPrincipal Member member) {
+
+        ResponseDto resDto = new ResponseDto();
+
+        List<Favorite> favList = favoriteRepository.findListByMember(member);
+
+        //거래글을 DTO로 변환
+        List<SalesPostSimpleDto> postDtoList =
+                favList.stream()
+                        .map(fav -> new SalesPostSimpleDto(fav.getPost()))
+                        .collect(Collectors.toList());
+
+        resDto.setMessage("성공적으로 관심목록을 가져왔습니다");
+        resDto.setData(postDtoList);
+
         return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 }
