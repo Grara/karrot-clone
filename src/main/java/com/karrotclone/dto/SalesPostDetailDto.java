@@ -27,6 +27,7 @@ public class SalesPostDetailDto {
 
     private List<String> imageUrls = new ArrayList<>(); //이미지 링크 리스트
     private String nickName; //판매자 닉네임
+    private String profileUrl; //판매자 프로필 이미지
     private String email; //판매자 이메일
     private String townName; //동네명
     private String title; //글제목
@@ -45,6 +46,7 @@ public class SalesPostDetailDto {
 
     public SalesPostDetailDto(SalesPost post) {
         this.nickName = post.getMember().getNickName();
+        this.profileUrl = post.getMember().getProfileUrl();
         this.email = post.getMember().getEmail();
         this.title = post.getTitle();
         this.content = post.getContent();

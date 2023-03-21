@@ -1,13 +1,19 @@
 package com.karrotclone.dto;
 
 import com.karrotclone.domain.Coordinate;
+import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 
+@Data
 public class RegisterDto {
 
     @Null
     private Long id;
+
+    private MultipartFile profile;
 
     @NotEmpty(message = "이름을 입력해야 합니다.")
     public String nickName;
@@ -21,5 +27,6 @@ public class RegisterDto {
 
     public String password;
 
+    @Valid
     public Coordinate town;
 }
