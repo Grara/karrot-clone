@@ -25,6 +25,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,28 +50,29 @@ public class MemberApiController {
 
     /**
      * 전달받은 폼 데이터로 회원가입을 진행합니다.
-     * @param dto 회원가입 요청 시 필요한 데이터 DTO
+     *
+     * @param dto           회원가입 요청 시 필요한 데이터 DTO
      * @param bindingResult dto의 값이 제약을 어길 경우 오류를 담는 객체
      * @lastModified 2023-03-21 노민준
      */
-    @ApiOperation(value="회원가입 요청", notes="입력된 정보를 토대로 회원가입을 진행합니다.")
+    @ApiOperation(value = "회원가입 요청", notes = "입력된 정보를 토대로 회원가입을 진행합니다.")
     @PostMapping("/api/v1/members")
-    public void register(final @Valid RegisterDto dto, @ApiIgnore BindingResult bindingResult){
-        if (bindingResult.hasErrors()){
+    public ResponseEntity<ResponseDto> register(final @Valid RegisterDto dto, @ApiIgnore BindingResult bindingResult) throws IOException {
+
+        ResponseDto resDto = new ResponseDto();
+
+        if (bindingResult.hasErrors()) {
             System.out.println(" Incoming error ");
-            return;
+            resDto.setMessage("입력한 정보가 문제가 있습니다. data는 오류정보입니다.");
+            resDto.setData(bindingResult.getAllErrors());
+            return new ResponseEntity<>(resDto, HttpStatus.BAD_REQUEST);
         }
-        try {
-            registerService.register(dto);
-            System.out.println("회원 가입이 완료되었습니다.");
-        }catch (DataIntegrityViolationException e){
-            e.printStackTrace();
-            bindingResult.reject("register failed","이미 등록된 메일입니다.");
-        } catch (Exception e){
-            System.out.println("error = " + e);
-            e.printStackTrace();
-            bindingResult.reject("register failed", e.getMessage());
-        }
+
+        registerService.register(dto);
+        System.out.println("회원 가입이 완료되었습니다.");
+        resDto.setMessage("회원가입에 성공했습니다.");
+        return new ResponseEntity<>(resDto, HttpStatus.CREATED);
+
     } //추후에 다른 로그인 Auth 구현 가능.
 
 }
