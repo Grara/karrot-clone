@@ -4,6 +4,7 @@ import com.karrotclone.config.jwt.JwtTokenProvider;
 import com.karrotclone.domain.Member;
 import com.karrotclone.dto.LoginDto;
 import com.karrotclone.dto.ResponseDto;
+import com.karrotclone.repository.TempMemberRepository;
 import com.karrotclone.service.auth.LoginService;
 import com.karrotclone.utils.CookieUtil;
 import com.karrotclone.utils.RedisUtil;
@@ -11,11 +12,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +38,8 @@ public class LoginController {
 
     private final RedisUtil redisUtil;
 
+    private final TempMemberRepository memberRepository;
+
     @PostMapping("api/v1/login")
     public ResponseEntity<ResponseDto> login(@RequestBody LoginDto user, HttpServletRequest req, HttpServletResponse res) {
 
@@ -53,7 +58,8 @@ public class LoginController {
     }
 
     @GetMapping("api/v1/logout")
-    public ResponseEntity<ResponseDto> logout(HttpServletRequest req, HttpServletResponse res) {
+    public ResponseEntity<ResponseDto> logout(HttpServletRequest req, HttpServletResponse res,
+                                              @ApiIgnore @AuthenticationPrincipal Member member) {
         SecurityContextHolder.clearContext();
         Cookie accessToken = cookieUtil.getCookie(req, jwtTokenProvider.ACCESS_TOKEN_NAME);
         Cookie refreshToken = cookieUtil.getCookie(req, jwtTokenProvider.REFRESH_TOKEN_NAME);
@@ -68,6 +74,9 @@ public class LoginController {
             res.addCookie(refreshToken);
             redisUtil.deleteData(refreshToken.getValue());
         }
+
+        member.setFcmToken(null);
+        memberRepository.save(member);
 
         ResponseDto resDto = new ResponseDto();
         resDto.setMessage("로그아웃에 성공했습니다.");

@@ -1,36 +1,25 @@
 package com.karrotclone.api;
 
-import com.karrotclone.domain.Favorite;
 import com.karrotclone.domain.Member;
-import com.karrotclone.domain.SalesPost;
 import com.karrotclone.dto.RegisterDto;
 import com.karrotclone.dto.ResponseDto;
-import com.karrotclone.dto.SalesPostDetailDto;
-import com.karrotclone.dto.SalesPostSimpleDto;
-import com.karrotclone.exception.DomainNotFoundException;
 import com.karrotclone.repository.FavoriteRepository;
 import com.karrotclone.repository.SalesPostRepository;
 import com.karrotclone.repository.TempMemberRepository;
 import com.karrotclone.service.auth.RegisterService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
-import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 /**
  * 회원과 관련된 API요청을 처리해주는 컨트롤러입니다.
@@ -75,4 +64,13 @@ public class MemberApiController {
 
     } //추후에 다른 로그인 Auth 구현 가능.
 
+    @ApiOperation(value = "FCM토큰 등록", notes = "유저의 FCM토큰을 등록합니다.")
+    @PostMapping("/api/v1/members/register-fcmtoken")
+    public ResponseEntity<ResponseDto> registerFcmToken(@RequestBody String token, @ApiIgnore @AuthenticationPrincipal Member member){
+        member.setFcmToken(token);
+        memberRepository.save(member);
+        ResponseDto resDto = new ResponseDto();
+        resDto.setMessage("FCM토큰이 정상적으로 등록되었습니다.");
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
 }

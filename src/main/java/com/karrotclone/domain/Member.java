@@ -39,7 +39,7 @@ public class Member implements UserDetails {
     private List<MemberChatRoomMapping> chatMappings = new ArrayList<>();
 
     private long searchRange;
-    private String fcmToken;
+    private String fcmToken; //FCM토큰 값
 
     public Member(String nickName, String email, String password, Roles role, Coordinate town) {
         this.nickName = nickName;
