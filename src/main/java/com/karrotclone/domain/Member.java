@@ -7,8 +7,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.management.relation.Role;
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,7 +35,11 @@ public class Member implements UserDetails {
     @Embedded //임베디드타입
     private Coordinate town;
 
+    @OneToMany(mappedBy = "chatRoom")
+    private List<MemberChatRoomMapping> chatMappings = new ArrayList<>();
+
     private long searchRange;
+    private String fcmToken;
 
     public Member(String nickName, String email, String password, Roles role, Coordinate town) {
         this.nickName = nickName;

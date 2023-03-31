@@ -1,0 +1,59 @@
+<!doctype html>
+<head>
+    <title>Websocket ChatRoom</title>
+
+</head>
+<body>
+<div>
+    <button onclick="location.href=`/chat/room`">돌아가기</button>
+</div>
+<div class="container" id="app" v-cloak>
+    <div>
+        <h2>{{room.name}}</h2>
+    </div>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <label class="input-group-text">내용</label>
+        </div>
+        <input id="input-message" type="text" class="form-control">
+        <div class="input-group-append">
+            <button class="btn btn-primary" type="button" onclick="sendMessage()">보내기</button>
+        </div>
+    </div>
+</div>
+<!-- JavaScript -->
+<script src="/webjars/vue/2.5.16/dist/vue.min.js"></script>
+<script src="/webjars/axios/0.17.1/dist/axios.min.js"></script>
+<script src="/webjars/sockjs-client/1.1.2/sockjs.min.js"></script>
+<script src="/webjars/stomp-websocket/2.3.3-1/stomp.min.js"></script>
+<script>
+    //alert(document.title);
+    // websocket & stomp initialize
+    var sock = new SockJS("/ws/chat");
+    var ws = Stomp.over(sock);
+    var reconnect = 0;
+    // vue.js
+
+    function connect() {
+        // pub/sub event
+        ws.connect({}, function(frame) {
+            ws.subscribe("/topic/sample/"+vm.$data.roomId, function(message) {
+                //var recv = JSON.parse(message.body);
+                //vm.recvMessage(recv);
+            });
+            ws.send("/app/chat/message", {}, JSON.stringify({receiverEmail:'dd', message:'ㅎㅇ'}));
+        }, function(error) {
+            if(reconnect++ <= 5) {
+                setTimeout(function() {
+                    console.log("connection reconnect");
+                    sock = new SockJS("/ws/chat");
+                    ws = Stomp.over(sock);
+                    connect();
+                },10*1000);
+            }
+        });
+    }
+    connect();
+</script>
+</body>
+</html>
