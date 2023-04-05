@@ -165,7 +165,7 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
         String result = "WHERE " + //조건문 시작
 
                 //거래글의 위도가 멤버의 위도±탐지거리 안에 위치해야함
-                "s.tradePlace.latitude BETWEEN " + memberLoSearchFrom + " AND " + memberLaSearchTo +
+                "s.tradePlace.latitude BETWEEN " + memberLaSearchFrom + " AND " + memberLaSearchTo +
                 " AND " +
                 //거래글의 경도가 멤버의 경도±탐지거리 안에 위치해야함
                 "s.tradePlace.longitude BETWEEN " + memberLoSearchFrom + " AND " + memberLoSearchTo +
