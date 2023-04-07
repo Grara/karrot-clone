@@ -21,7 +21,7 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    public static final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60 * 30;
+    public static final long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60 * 60 * 2;
     public static final long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60 * 60 * 24 * 30;
 
     final public String ACCESS_TOKEN_NAME = "accessToken";
