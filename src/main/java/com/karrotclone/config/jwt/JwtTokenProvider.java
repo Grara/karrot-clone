@@ -79,6 +79,7 @@ public class JwtTokenProvider {
         if(redisUtil.hasKeyBlackList("LOGOUT_"+token)){
             return false;
         }
+        Jwts.parserBuilder().setSigningKey(getSigningKey(SECRET_KEY)).build().parseClaimsJws(token);
         return true;
     }
 }

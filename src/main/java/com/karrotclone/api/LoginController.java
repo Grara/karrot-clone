@@ -40,10 +40,10 @@ public class LoginController {
 
         final Member member = loginService.login(user.getEmail(), user.getPassword());
         Cookie accessToken = cookieUtil.creatCookie(jwtTokenProvider.ACCESS_TOKEN_NAME, jwtTokenProvider.generateAccessToken(member));
-        accessToken.setMaxAge((int) TimeUnit.MILLISECONDS.toSeconds(jwtTokenProvider.ACCESS_TOKEN_EXPIRE_TIME));
+        accessToken.setMaxAge((int) TimeUnit.MILLISECONDS.toSeconds(jwtTokenProvider.REFRESH_TOKEN_EXPIRE_TIME));
         Cookie refreshToken = cookieUtil.creatCookie(jwtTokenProvider.REFRESH_TOKEN_NAME, jwtTokenProvider.generateRefreshToken(member));
         refreshToken.setMaxAge((int) TimeUnit.MILLISECONDS.toSeconds(jwtTokenProvider.REFRESH_TOKEN_EXPIRE_TIME));
-        redisUtil.setDataExpire(refreshToken.getValue(), member.getUsername(), jwtTokenProvider.REFRESH_TOKEN_EXPIRE_TIME);
+        redisUtil.setDataExpire(refreshToken.getValue(), member.getEmail(), jwtTokenProvider.REFRESH_TOKEN_EXPIRE_TIME);
         res.addCookie(accessToken);
         res.addCookie(refreshToken);
 
