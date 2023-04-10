@@ -76,7 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null,userDetails.getAuthorities() );
                     usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
-                    Cookie newAccessToken = cookieUtil.creatCookie(jwtTokenProvider.ACCESS_TOKEN_NAME, jwtTokenProvider.doGenerateToken(refreshUserEmail, jwtTokenProvider.ACCESS_TOKEN_EXPIRE_TIME));
+                    Cookie newAccessToken = cookieUtil.creatCookie(jwtTokenProvider.ACCESS_TOKEN_NAME, jwtTokenProvider.doGenerateToken(refreshUserEmail, jwtTokenProvider.REFRESH_TOKEN_EXPIRE_TIME));
                     response.addCookie(newAccessToken);
                 }
             } else{
