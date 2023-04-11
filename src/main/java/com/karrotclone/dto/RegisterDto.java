@@ -4,6 +4,7 @@ import com.karrotclone.domain.Coordinate;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import javax.validation.constraints.*;
 
 @Data
@@ -25,5 +26,6 @@ public class RegisterDto {
     public String password;
 
     @NotNull(message = "위치정보는 필수입니다.")
+    @Valid
     public Coordinate town;
 }
