@@ -58,4 +58,4 @@ cloud:
       auto: false
 
 fcm:
-  certification: karrot-38ab4-firebase-adminsdk-hnrb4-885ec63b2a.json
+  certification: C:\Users\USER\Portfolio\karrotclone\src\main\resources\karrot-38ab4-firebase-adminsdk-hnrb4-885ec63b2a.json

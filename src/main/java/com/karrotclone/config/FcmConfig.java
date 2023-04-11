@@ -5,9 +5,12 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -22,7 +25,7 @@ public class FcmConfig {
 
     @PostConstruct
     public void initialize() throws Exception{
-        ClassPathResource resource = new ClassPathResource(credential);
+        Resource resource = new FileSystemResource(credential);
 
         try(InputStream stream = resource.getInputStream()) {
             FirebaseOptions options = FirebaseOptions.builder()
