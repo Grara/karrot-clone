@@ -1,9 +1,12 @@
 package com.karrotclone.domain;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +29,10 @@ public class ChatRoom {
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.PERSIST)
     private List<ChatLog> chatLogs = new ArrayList<>();
 
+    private String lastMessage; //마지막 메세지
+    @Setter(AccessLevel.NONE)
+    private LocalDateTime lastChatTime; //마지막 메세지를 보낸 시간
+
     public void addChatLog(ChatLog log){
         getChatLogs().add(log);
         log.setChatRoom(this);
@@ -34,5 +41,10 @@ public class ChatRoom {
     public ChatRoom(Member host, Member guest) {
         this.host = host;
         this.guest = guest;
+    }
+
+    public void setLastMessage(String lastMessage) {
+        this.lastMessage = lastMessage;
+        this.lastChatTime = LocalDateTime.now();
     }
 }

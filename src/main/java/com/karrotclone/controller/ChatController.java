@@ -22,6 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -53,6 +54,7 @@ public class ChatController {
                 .orElse(chatRoomRepository.save(new ChatRoom(sender, receiver)));
 
         chatRoom.addChatLog(new ChatLog(sender, receiver, message.getMessage()));
+        chatRoom.setLastMessage(message.getMessage());
         chatRoomRepository.save(chatRoom);
 
         String sessionId = userSessions.get(receiverEmail);
