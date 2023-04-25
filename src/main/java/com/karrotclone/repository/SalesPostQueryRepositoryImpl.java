@@ -43,11 +43,11 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param member 판매자
      * @param id     중복되면 안되는 id
      * @return 찾아낸 거래글 리스트
-     * @lastModified 2023-03-09 노민준
+     * @lastModified 2023-04-25 노민준
      */
     @Override
     public List<SalesPost> findTop4ListBySeller(Member member, Long id) {
-        return em.createQuery("SELECT s " +
+        return em.createQuery("SELECT DISTINCT s " +
                         "FROM SalesPost s " +
                         "LEFT JOIN FETCH s.imageUrls " + //이미지 url 가져올 때 N+1 방지
                         "WHERE s.id != :id AND s.salesState != :salesState AND s.isHide != true AND s.member = :member " +
@@ -65,12 +65,12 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param condition 검색 조건
      * @param pageable 요청한 페이지 정보
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastModified 2023-03-09 노민준
+     * @lastModified 2023-04-25 노민준
      */
     @Override
     public Slice<SalesPostSimpleDto> findHomeList(Member member, PostHomeSearchCondition condition, Pageable pageable) {
 
-        List<SalesPost> postList = em.createQuery("SELECT s " +
+        List<SalesPost> postList = em.createQuery("SELECT DISTINCT s " +
                         "FROM SalesPost s " +
                         "LEFT JOIN FETCH s.imageUrls " +
                         homeListCondition(member, condition) +
@@ -93,13 +93,13 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param condition 검색 조건
      * @param pageable 페이징 파라미터
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastModified 2023-03-18 노민준
+     * @lastModified 2023-04-25 노민준
      */
     @Override
     public Slice<SalesPostSimpleDto> findAllListBySeller(PostSellerSearchCondition condition, Pageable pageable) {
 
-        List<SalesPostSimpleDto> content = queryFactory
-                .select(new QSalesPostSimpleDto(salesPost))
+        List<SalesPost> _content = queryFactory
+                .select(salesPost).distinct()
                 .from(salesPost)
                 .leftJoin(salesPost.imageUrls, Expressions.stringPath("imageUrl")).fetchJoin() //이미지 url 리스트 페치조인
                 .leftJoin(salesPost.member, QMember.member).fetchJoin() //판매자 페치 조인
@@ -112,6 +112,9 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        //select에서 바로 DTO생성하면 각 DTO의 객체 주소값이 달라서 DISTINCT가 제대로 작동하지 않음
+        List<SalesPostSimpleDto> content = _content.stream().map(SalesPostSimpleDto::new).collect(Collectors.toList());
+
         return new SliceImpl<>(content, pageable, content.size() == pageable.getPageSize());
 
     }
@@ -122,12 +125,12 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
      * @param condition 검색 조건
      * @param pageable 페이징 파라미터
      * @return 거래글 DTO 리스트를 지닌 Slice 객체
-     * @lastModified 2023-03-09 노민준
+     * @lastModified 2023-04-25 노민준
      */
     @Override
     public Slice<SalesPostSimpleDto> findMySalesList(Member member, MySalesSearchCondition condition, Pageable pageable) {
-        List<SalesPostSimpleDto> content = queryFactory
-                .select(new QSalesPostSimpleDto(salesPost))
+        List<SalesPost> _content = queryFactory
+                .select(salesPost).distinct()
                 .from(salesPost)
                 .leftJoin(salesPost.imageUrls, Expressions.stringPath("imageUrl")).fetchJoin()//이미지url 페치조인
                 .leftJoin(salesPost.member, QMember.member).fetchJoin() //판매자 페치조인
@@ -139,6 +142,9 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        //select에서 바로 DTO생성하면 각 DTO의 객체 주소값이 달라서 DISTINCT가 제대로 작동하지 않음
+        List<SalesPostSimpleDto> content = _content.stream().map(SalesPostSimpleDto::new).collect(Collectors.toList());
 
         return new SliceImpl<>(content, pageable, content.size() == pageable.getPageSize());
     }

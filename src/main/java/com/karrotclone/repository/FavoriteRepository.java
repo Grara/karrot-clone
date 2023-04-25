@@ -17,9 +17,9 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
     /**
      * 멤버의 관심목록을 가져옵니다. 숨기기인 거래글은 제외합니다.
-     * @since 2023-03-07
+     * @lastModified 2023-04-25
      */
-    @Query("SELECT f " +
+    @Query("SELECT DISTINCT f " +
             "FROM Favorite f " +
             "LEFT JOIN FETCH f.post p " +
             "LEFT JOIN FETCH p.imageUrls " +

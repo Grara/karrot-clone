@@ -20,7 +20,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             "FROM ChatRoom c " +
             "LEFT JOIN FETCH c.host " +
             "LEFT JOIN FETCH c.guest " +
-            "WHERE c.host = :member OR c.guest = :member" +
+            "WHERE c.host = :member OR c.guest = :member " +
             "ORDER BY c.lastChatTime DESC")
     List<ChatRoom> findListByMember(Member member);
 }

@@ -38,7 +38,7 @@ public class ChatLogQueryRepositoryImpl implements ChatLogQueryRepository{
     @Override
     public Slice<ChatLogDto> findListByChatRoomId(ChatRoom chatRoom, Pageable pageable) {
         List<ChatLog> _content = queryFactory
-                .select(chatLog)
+                .select(chatLog).distinct()
                 .from(chatLog)
                 .leftJoin(chatLog.sender, QMember.member).fetchJoin()
                 .leftJoin(chatLog.receiver, QMember.member).fetchJoin()
