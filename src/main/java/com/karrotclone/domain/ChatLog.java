@@ -3,6 +3,7 @@ package com.karrotclone.domain;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -20,15 +21,20 @@ public class ChatLog {
     private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+    @JoinColumn(name = "sender_id")
+    private Member sender;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "receiver_id")
+    private Member receiver;
 
     private String message;
 
     private LocalDateTime createDateTime;
 
-    public ChatLog(Member member, String message){
-        this.member = member;
+    public ChatLog(Member sender,Member receiver, String message){
+        this.sender = sender;
+        this.receiver = receiver;
         this.message = message;
         this.createDateTime = LocalDateTime.now();
     }

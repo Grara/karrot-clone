@@ -8,23 +8,34 @@ import com.karrotclone.domain.ChatLog;
 import com.karrotclone.domain.ChatRoom;
 import com.karrotclone.domain.Member;
 import com.karrotclone.domain.MemberChatRoomMapping;
+import com.karrotclone.dto.ChatLogDto;
 import com.karrotclone.dto.ChatMessageDto;
+import com.karrotclone.dto.ChatRoomDto;
 import com.karrotclone.dto.ResponseDto;
 import com.karrotclone.exception.DomainNotFoundException;
+import com.karrotclone.repository.ChatLogRepository;
 import com.karrotclone.repository.ChatMappingRepository;
 import com.karrotclone.repository.ChatRoomRepository;
 import com.karrotclone.repository.TempMemberRepository;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,48 +43,7 @@ public class ChatApiController {
     private final SimpMessageSendingOperations sendingOperations;
     private TempMemberRepository memberRepository;
     private ChatRoomRepository chatRoomRepository;
-    private ChatMappingRepository chatMappingRepository;
-
-//    @MessageMapping("/chat/message")
-//    //@RolesAllowed({"USER"})
-//    public ResponseEntity<ResponseDto> sendMessage(ChatMessageDto chatMessage, @AuthenticationPrincipal Member member){
-//
-//        ChatRoom chatRoom = chatRoomRepository.findById(chatMessage.getRoomId())
-//                .orElseThrow(() -> new DomainNotFoundException("id에 해당하는 채팅방이 없습니다."));
-//        ChatLog chatLog = new ChatLog(member, chatMessage.getMessage());
-//        chatRoom.addChatLog(chatLog);
-//        chatRoomRepository.save(chatRoom);
-//
-//        sendingOperations.convertAndSend("/topic/room/"+chatMessage.getRoomId(), chatMessage.getMessage());
-//
-//        ResponseDto resDto = new ResponseDto();
-//        resDto.setMessage("채팅메세지를 성공적으로 전송했습니다.");
-//        return new ResponseEntity<>(resDto, HttpStatus.OK);
-//    }
-//
-//    @PostMapping("/api/v1/chatroom")
-//    public ResponseEntity<ResponseDto> createChatRoom(@RequestBody String receiverEmail, @AuthenticationPrincipal Member member){
-//
-//        ChatRoom chatRoom = chatRoomRepository.save(new ChatRoom());
-//        MemberChatRoomMapping mapping1 = new MemberChatRoomMapping();
-//        mapping1.setMember(member);
-//        mapping1.setChatRoom(chatRoom);
-//        chatMappingRepository.save(mapping1);
-//
-//        Member receiver = memberRepository.findByEmail(receiverEmail)
-//                .orElseThrow(() -> new DomainNotFoundException("이메일에 해당하는 상대 회원이 없습니다."));
-//
-//        MemberChatRoomMapping mapping2 = new MemberChatRoomMapping();
-//        mapping2.setMember(receiver);
-//        mapping2.setChatRoom(chatRoom);
-//        chatMappingRepository.save(mapping2);
-//
-//        ResponseDto resDto = new ResponseDto();
-//        resDto.setMessage("채팅방을 성공적으로 생성했습니다. data는 생성된 채팅방의 id입니다.");
-//        resDto.setData(chatRoom.getId());
-//
-//        return new ResponseEntity<>(resDto, HttpStatus.CREATED);
-//    }
+    private ChatLogRepository chatLogRepository;
 
     /**
      * 현재 로그인한 멤버의 FCM토큰을 참고하여 테스트 푸쉬알림을 보냅니다.
@@ -101,6 +71,54 @@ public class ChatApiController {
         String response = FirebaseMessaging.getInstance().send(msg);
 
         resDto.setMessage("메세지 전송에 성공했습니다.");
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    @ApiOperation(value = "나의 채팅목록 불러오기", notes = "나의 채팅목록을 불러옵니다.")
+    @GetMapping("/api/v1/members/get-my-chat-list")
+    public ResponseEntity<ResponseDto> getMyChatList(@ApiIgnore @AuthenticationPrincipal Member member) {
+
+        List<ChatRoom> chatRooms = chatRoomRepository.findListByMember(member);
+        List<ChatRoomDto> chatRoomDtos = new ArrayList<>();
+
+        for(ChatRoom chatRoom : chatRooms){
+            ChatRoomDto roomDto = new ChatRoomDto();
+
+            roomDto.setLastMessage(chatRoom.getLastMessage());
+            roomDto.setLastChatTime(chatRoom.getLastChatTime());
+
+            if(chatRoom.getHost() != member){ //채팅룸의 호스트가 상대방일 경우
+                roomDto.setOtherPersonNickname(chatRoom.getHost().getNickName());
+                roomDto.setOtherPersonProfileUrl(chatRoom.getHost().getProfileUrl());
+                roomDto.setOtherPersonTownName(chatRoom.getHost().getTown().getTownName());
+            }
+
+            else{ //채팅룸의 게스트가 상대방일 경우
+                roomDto.setOtherPersonNickname(chatRoom.getGuest().getNickName());
+                roomDto.setOtherPersonProfileUrl(chatRoom.getGuest().getProfileUrl());
+                roomDto.setOtherPersonTownName(chatRoom.getGuest().getTown().getTownName());
+            }
+
+            chatRoomDtos.add(roomDto);
+        }
+
+        ResponseDto resDto = new ResponseDto();
+        resDto.setData(chatRoomDtos);
+        resDto.setMessage("채팅목록 조회에 성공했습니다.");
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    @ApiOperation(value="채팅기록 가져오기", notes = "offset을 설정한 뒤 채팅방의 기록을 가져옵니다.")
+    @GetMapping("/api/v1/chat/get-by-room-id")
+    public ResponseEntity<ResponseDto> getChatLogByRoomId(@RequestBody Long roomId, Pageable pageable){
+        ChatRoom chatRoom =
+                chatRoomRepository.findById(roomId).orElseThrow(() -> new DomainNotFoundException("채팅방이 존재하지 않습니다."));
+        Slice<ChatLogDto> result = chatLogRepository.findListByChatRoomId(chatRoom, pageable);
+
+        ResponseDto resDto = new ResponseDto();
+        resDto.setMessage("채팅로그 조회에 성공했습니다.");
+        resDto.setData(result);
         return new ResponseEntity<>(resDto, HttpStatus.OK);
     }
 }
