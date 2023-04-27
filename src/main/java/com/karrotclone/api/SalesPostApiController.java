@@ -11,6 +11,8 @@ import com.karrotclone.repository.SalesPostRepository;
 import com.karrotclone.repository.TempMemberRepository;
 import com.karrotclone.utils.AwsUtil;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
@@ -405,7 +407,7 @@ public class SalesPostApiController {
     /**
      * 회원의 관심목록을 가져옵니다.
      * @return 관심목록에 있는 거래글들의 DTO 리스트
-     * @lastModified 2023-03-21 노민준
+     * @lastModified 2023-04-27 노민준
      */
     @ApiOperation(value="관심목록 가져오기 요청", notes = "회원의 관심목록을 가져옵니다.")
     @GetMapping("/api/v1/favorites")
@@ -421,6 +423,12 @@ public class SalesPostApiController {
                 favList.stream()
                         .map(fav -> new SalesPostSimpleDto(fav.getPost()))
                         .collect(Collectors.toList());
+
+        if(postDtoList.isEmpty()){
+            resDto.setMessage("관심목록이 비어있습니다.");
+            resDto.setData(null);
+            return new ResponseEntity<>(resDto, HttpStatus.OK);
+        }
 
         resDto.setMessage("성공적으로 관심목록을 가져왔습니다");
         resDto.setData(postDtoList);
