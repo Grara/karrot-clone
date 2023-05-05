@@ -26,7 +26,7 @@ public class ChatRoom {
     @JoinColumn(name = "guest_id")
     private Member guest; //호스트가 아닌 채팅 참여자
 
-    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.PERSIST)
+    @OneToMany(mappedBy = "chatRoom")
     private List<ChatLog> chatLogs = new ArrayList<>();
 
     private String lastMessage; //마지막 메세지
