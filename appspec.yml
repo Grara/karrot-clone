@@ -12,8 +12,8 @@ permissions:
     group: ec2-user
 
 hooks:
-  ApplicationsStart:
-    - location: /home/ec2-user/test
+  AfterInstall:
+    - location: /home/ec2-user/app/karrot/temp/start.sh
       timeout: 60
       runas: ec2-user
 
