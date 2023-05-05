@@ -41,3 +41,6 @@ cloud:
       static: ap-northeast-2
     stack:
       auto: false
+
+fcm:
+  certification: C:\Users\USER\Portfolio\karrotclone\src\main\resources\karrot-38ab4-firebase-adminsdk-hnrb4-885ec63b2a.json

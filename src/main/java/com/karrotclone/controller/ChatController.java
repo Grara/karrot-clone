@@ -6,6 +6,7 @@ import com.karrotclone.domain.Member;
 import com.karrotclone.dto.ChatMessageDto;
 import com.karrotclone.dto.ResponseDto;
 import com.karrotclone.exception.DomainNotFoundException;
+import com.karrotclone.repository.ChatLogRepository;
 import com.karrotclone.repository.ChatRoomRepository;
 import com.karrotclone.repository.TempMemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,17 +14,21 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
@@ -33,6 +38,7 @@ public class ChatController {
     private final SimpMessageSendingOperations sendingOperations;
     private final ChatRoomRepository chatRoomRepository;
     private final TempMemberRepository memberRepository;
+    private final ChatLogRepository chatLogRepository;
     private Map<String, String> userSessions = new ConcurrentHashMap<>();
 
     /**
@@ -41,26 +47,28 @@ public class ChatController {
      * @param message 메세지DTO
      * @lastModified 2023-04-15 노민준
      */
-    @MessageMapping("/chat/{receiverEmail}")
+    @MessageMapping("/chat/{senderEmail}/{receiverEmail}")
     //@RolesAllowed({"USER"})
-    public void sendMessage(@DestinationVariable String receiverEmail, ChatMessageDto message){
+    public void sendMessage(@DestinationVariable("senderEmail") String senderEmail, @DestinationVariable("receiverEmail") String receiverEmail, String message){
 
-        Member sender = memberRepository.findByEmail(message.getSenderEmail())
+        Member sender = memberRepository.findByEmail(senderEmail)
                 .orElseThrow(() -> new DomainNotFoundException("존재하지 않는 멤버입니다."));
         Member receiver = memberRepository.findByEmail(receiverEmail)
                 .orElseThrow(() -> new DomainNotFoundException("존재하지 않는 멤버입니다."));
 
-        ChatRoom chatRoom = chatRoomRepository.findByHostAndGuest(sender, receiver)
-                .orElse(chatRoomRepository.save(new ChatRoom(sender, receiver)));
+        Optional<ChatRoom> _chatRoom = chatRoomRepository.findByHostAndGuest(sender, receiver);
 
-        chatRoom.addChatLog(new ChatLog(sender, receiver, message.getMessage()));
-        chatRoom.setLastMessage(message.getMessage());
-        chatRoomRepository.save(chatRoom);
+        ChatRoom chatRoom = _chatRoom.orElse(new ChatRoom(sender, receiver));
 
-        String sessionId = userSessions.get(receiverEmail);
-        if (sessionId != null) {
-            sendingOperations.convertAndSendToUser(sessionId, "/queue/messages", message);
-        }
+        ChatLog log = new ChatLog(sender, receiver, message);
+
+        chatRoom.addChatLog(log);
+        chatRoom.setLastMessage(message);
+        chatRoomRepository.save(chatRoom); //채팅 로그부터 저장하면 에러발생함
+        chatLogRepository.save(log);
+
+        sendingOperations.convertAndSend("/queue/messages/" + senderEmail + "/" + receiverEmail, message);
+
     }
 
     /**
@@ -69,9 +77,11 @@ public class ChatController {
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        String email = accessor.getFirstNativeHeader("email");
+        GenericMessage m1 = (GenericMessage) accessor.getHeader("simpConnectMessage");
+        List<String> _email = (List) m1.getHeaders().get("nativeHeaders", Map.class).get("email");
+        String email = _email.get(0);
         if (email != null) {
-            userSessions.put(email, accessor.getSessionId());
+            userSessions.put(email, email);
         }
     }
 

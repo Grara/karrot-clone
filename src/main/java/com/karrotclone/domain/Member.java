@@ -35,9 +35,6 @@ public class Member implements UserDetails {
     @Embedded //임베디드타입
     private Coordinate town;
 
-    @OneToMany(mappedBy = "chatRoom")
-    private List<MemberChatRoomMapping> chatMappings = new ArrayList<>();
-
     private long searchRange;
     private String fcmToken; //FCM토큰 값
 

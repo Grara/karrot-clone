@@ -1,9 +1,6 @@
 package com.karrotclone.domain;
 
-import lombok.AccessLevel;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -11,6 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(exclude = {"chatRoom"})
 public class ChatLog {
     @Id @GeneratedValue
     @Column(name = "chatlog_id")

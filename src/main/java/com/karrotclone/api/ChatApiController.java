@@ -4,28 +4,21 @@ package com.karrotclone.api;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
-import com.karrotclone.domain.ChatLog;
 import com.karrotclone.domain.ChatRoom;
 import com.karrotclone.domain.Member;
-import com.karrotclone.domain.MemberChatRoomMapping;
 import com.karrotclone.dto.ChatLogDto;
-import com.karrotclone.dto.ChatMessageDto;
 import com.karrotclone.dto.ChatRoomDto;
 import com.karrotclone.dto.ResponseDto;
 import com.karrotclone.exception.DomainNotFoundException;
 import com.karrotclone.repository.ChatLogRepository;
-import com.karrotclone.repository.ChatMappingRepository;
 import com.karrotclone.repository.ChatRoomRepository;
 import com.karrotclone.repository.TempMemberRepository;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -88,15 +81,15 @@ public class ChatApiController {
             roomDto.setLastChatTime(chatRoom.getLastChatTime());
 
             if(chatRoom.getHost() != member){ //채팅룸의 호스트가 상대방일 경우
-                roomDto.setOtherPersonNickname(chatRoom.getHost().getNickName());
-                roomDto.setOtherPersonProfileUrl(chatRoom.getHost().getProfileUrl());
-                roomDto.setOtherPersonTownName(chatRoom.getHost().getTown().getTownName());
+                roomDto.setChatMateNickname(chatRoom.getHost().getNickName());
+                roomDto.setChatMateProfileUrl(chatRoom.getHost().getProfileUrl());
+                roomDto.setChatMateTownName(chatRoom.getHost().getTown().getTownName());
             }
 
             else{ //채팅룸의 게스트가 상대방일 경우
-                roomDto.setOtherPersonNickname(chatRoom.getGuest().getNickName());
-                roomDto.setOtherPersonProfileUrl(chatRoom.getGuest().getProfileUrl());
-                roomDto.setOtherPersonTownName(chatRoom.getGuest().getTown().getTownName());
+                roomDto.setChatMateNickname(chatRoom.getGuest().getNickName());
+                roomDto.setChatMateProfileUrl(chatRoom.getGuest().getProfileUrl());
+                roomDto.setChatMateTownName(chatRoom.getGuest().getTown().getTownName());
             }
 
             chatRoomDtos.add(roomDto);

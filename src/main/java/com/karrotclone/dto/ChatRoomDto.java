@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 
 @Data
 public class ChatRoomDto {
-    private String otherPersonNickname;
-    private String otherPersonProfileUrl;
-    private String otherPersonTownName;
+    private String chatMateNickname;
+    private String chatMateProfileUrl;
+    private String chatMateTownName;
     private String lastMessage;
     private LocalDateTime lastChatTime;
 }
