@@ -16,3 +16,5 @@ hooks:
     - location: /home/ec2-user/test
       timeout: 60
       runas: ec2-user
+
+#긔긔
