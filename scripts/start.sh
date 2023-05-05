@@ -1,7 +1,7 @@
 #!/bin/bash
 
 REPOSITORY=/home/ec2-user/app/karrot/temp/build/libs
-TEMP_REPOSITORY=/home/ec2-user/app/karrot/temp
+TEMP_REPOSITORY=/home/ec2-user/app/karrot
 
 echo "> 현재 구동중인 PID확인"
 
