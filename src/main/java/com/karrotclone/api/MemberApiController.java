@@ -44,7 +44,7 @@ public class MemberApiController {
      * @param bindingResult dto의 값이 제약을 어길 경우 오류를 담는 객체
      * @lastModified 2023-03-21 노민준
      */
-    @ApiOperation(value = "회원가입 요청444", notes = "입력된 정보를 토대로 회원가입을 진행합니다.")
+    @ApiOperation(value = "회원가입 요청555", notes = "입력된 정보를 토대로 회원가입을 진행합니다.")
     @PostMapping("/api/v1/members")
     public ResponseEntity<ResponseDto> register(final @Valid RegisterDto dto, @ApiIgnore BindingResult bindingResult) throws IOException {
 
