@@ -108,6 +108,7 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
                         stateEq(condition.getSalesState()), //거래상태
                         salesPost.isHide.eq(false)
                 )
+                .orderBy(salesPost.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -139,6 +140,7 @@ public class SalesPostQueryRepositoryImpl implements SalesPostQueryRepository {
                         stateEq(condition.getSalesState()),
                         salesPost.isHide.eq(condition.getIsHide())
                 )
+                .orderBy(salesPost.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();

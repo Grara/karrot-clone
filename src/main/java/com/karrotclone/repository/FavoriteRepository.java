@@ -23,6 +23,7 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
             "FROM Favorite f " +
             "LEFT JOIN FETCH f.post p " +
             "LEFT JOIN FETCH p.imageUrls " +
-            "WHERE f.member = :member AND p.isHide != true")
+            "WHERE f.member = :member AND p.isHide != true " +
+            "ORDER BY f.id DESC")
     List<Favorite> findListByMember(@Param("member") Member member);
 }
