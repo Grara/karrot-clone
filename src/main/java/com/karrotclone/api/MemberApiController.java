@@ -51,14 +51,12 @@ public class MemberApiController {
         ResponseDto resDto = new ResponseDto();
 
         if (bindingResult.hasErrors()) {
-            System.out.println(" Incoming error ");
             resDto.setMessage("입력한 정보가 문제가 있습니다. data는 오류정보입니다.");
             resDto.setData(bindingResult.getAllErrors());
             return new ResponseEntity<>(resDto, HttpStatus.BAD_REQUEST);
         }
 
         registerService.register(dto);
-        System.out.println("회원 가입이 완료되었습니다.");
         resDto.setMessage("회원가입에 성공했습니다.");
         return new ResponseEntity<>(resDto, HttpStatus.CREATED);
 
