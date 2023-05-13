@@ -3,10 +3,9 @@ package com.karrotclone.service.auth;
 import com.karrotclone.domain.Member;
 import com.karrotclone.domain.enums.Roles;
 import com.karrotclone.dto.RegisterDto;
-import com.karrotclone.repository.TempMemberRepository;
+import com.karrotclone.repository.MemberRepository;
 import com.karrotclone.utils.AwsUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +17,7 @@ import java.io.IOException;
 @Transactional(rollbackOn = Exception.class)
 public class RegisterService {
 
-    private final TempMemberRepository memberRepository;
+    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final AwsUtil awsUtil;
 

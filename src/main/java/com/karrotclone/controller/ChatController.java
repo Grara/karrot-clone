@@ -3,29 +3,21 @@ package com.karrotclone.controller;
 import com.karrotclone.domain.ChatLog;
 import com.karrotclone.domain.ChatRoom;
 import com.karrotclone.domain.Member;
-import com.karrotclone.dto.ChatMessageDto;
-import com.karrotclone.dto.ResponseDto;
 import com.karrotclone.exception.DomainNotFoundException;
 import com.karrotclone.repository.ChatLogRepository;
 import com.karrotclone.repository.ChatRoomRepository;
-import com.karrotclone.repository.TempMemberRepository;
+import com.karrotclone.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.GenericMessage;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,7 +29,7 @@ public class ChatController {
 
     private final SimpMessageSendingOperations sendingOperations;
     private final ChatRoomRepository chatRoomRepository;
-    private final TempMemberRepository memberRepository;
+    private final MemberRepository memberRepository;
     private final ChatLogRepository chatLogRepository;
     private Map<String, String> userSessions = new ConcurrentHashMap<>();
 

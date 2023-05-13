@@ -12,7 +12,7 @@ import com.karrotclone.dto.ResponseDto;
 import com.karrotclone.exception.DomainNotFoundException;
 import com.karrotclone.repository.ChatLogRepository;
 import com.karrotclone.repository.ChatRoomRepository;
-import com.karrotclone.repository.TempMemberRepository;
+import com.karrotclone.repository.MemberRepository;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +34,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatApiController {
     private final SimpMessageSendingOperations sendingOperations;
-    private TempMemberRepository memberRepository;
+    private MemberRepository memberRepository;
     private ChatRoomRepository chatRoomRepository;
     private ChatLogRepository chatLogRepository;
 

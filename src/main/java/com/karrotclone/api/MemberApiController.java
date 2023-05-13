@@ -5,7 +5,7 @@ import com.karrotclone.dto.RegisterDto;
 import com.karrotclone.dto.ResponseDto;
 import com.karrotclone.repository.FavoriteRepository;
 import com.karrotclone.repository.SalesPostRepository;
-import com.karrotclone.repository.TempMemberRepository;
+import com.karrotclone.repository.MemberRepository;
 import com.karrotclone.service.auth.RegisterService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ import java.io.IOException;
 public class MemberApiController {
 
     private final SalesPostRepository salesPostRepository;
-    private final TempMemberRepository memberRepository;
+    private final MemberRepository memberRepository;
     private final FavoriteRepository favoriteRepository;
     private final RegisterService registerService;
 

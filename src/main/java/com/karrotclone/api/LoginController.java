@@ -4,7 +4,7 @@ import com.karrotclone.config.jwt.JwtTokenProvider;
 import com.karrotclone.domain.Member;
 import com.karrotclone.dto.LoginDto;
 import com.karrotclone.dto.ResponseDto;
-import com.karrotclone.repository.TempMemberRepository;
+import com.karrotclone.repository.MemberRepository;
 import com.karrotclone.service.auth.LoginService;
 import com.karrotclone.utils.CookieUtil;
 import com.karrotclone.utils.RedisUtil;
@@ -38,7 +38,7 @@ public class LoginController {
 
     private final RedisUtil redisUtil;
 
-    private final TempMemberRepository memberRepository;
+    private final MemberRepository memberRepository;
 
     @PostMapping("api/v1/login")
     public ResponseEntity<ResponseDto> login(@RequestBody LoginDto user, HttpServletRequest req, HttpServletResponse res) {

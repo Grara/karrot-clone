@@ -1,12 +1,10 @@
 package com.karrotclone;
 
-import com.karrotclone.domain.Address;
 import com.karrotclone.domain.Coordinate;
 import com.karrotclone.domain.Member;
-import com.karrotclone.domain.SalesPost;
 import com.karrotclone.domain.enums.Roles;
 import com.karrotclone.repository.SalesPostRepository;
-import com.karrotclone.repository.TempMemberRepository;
+import com.karrotclone.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -21,14 +19,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TempInitRunner implements ApplicationRunner {
 
-    private final TempMemberRepository tempMemberRepository;
+    private final MemberRepository memberRepository;
     private final SalesPostRepository salesPostRepository;
     private final PasswordEncoder passwordEncoder;
     @Override
     public void run(ApplicationArguments args) throws Exception {
         Member member = new Member("user", "ddd", passwordEncoder.encode("1234"), Roles.ROLE_USER, new Coordinate(0L,0L,"망원동", "망원역"));
-        tempMemberRepository.save(member); //임시 멤버 생성
+        memberRepository.save(member); //임시 멤버 생성
         Member member1 = new Member("아몰랑", "nmj12@google.com", passwordEncoder.encode("1234"), Roles.ROLE_USER, new Coordinate(0L,0L,"망원동", "망원역"));
-        tempMemberRepository.save(member1); //임시 멤버 생성
+        memberRepository.save(member1); //임시 멤버 생성
     }
 }

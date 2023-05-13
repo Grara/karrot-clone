@@ -1,7 +1,7 @@
 package com.karrotclone.service.auth;
 
 import com.karrotclone.domain.Member;
-import com.karrotclone.repository.TempMemberRepository;
+import com.karrotclone.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -20,7 +20,7 @@ public class LoginService {
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
-    private final TempMemberRepository memberRepository;
+    private final MemberRepository memberRepository;
 
     public Member login(String email, String password){
         UsernamePasswordAuthenticationToken authenticationToken =

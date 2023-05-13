@@ -8,18 +8,14 @@ import com.karrotclone.dto.*;
 import com.karrotclone.exception.DomainNotFoundException;
 import com.karrotclone.repository.FavoriteRepository;
 import com.karrotclone.repository.SalesPostRepository;
-import com.karrotclone.repository.TempMemberRepository;
+import com.karrotclone.repository.MemberRepository;
 import com.karrotclone.utils.AwsUtil;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
@@ -32,7 +28,6 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +40,7 @@ import java.util.stream.Collectors;
 @RestController
 public class SalesPostApiController {
 
-    private final TempMemberRepository tempMemberRepository; //임시로 사용할 멤버 DAO객체
+    private final MemberRepository memberRepository; //임시로 사용할 멤버 DAO객체
     private final SalesPostRepository salesPostRepository; //거래글 DAO
     private final AwsUtil awsUtil;
     private final FavoriteRepository favoriteRepository;
