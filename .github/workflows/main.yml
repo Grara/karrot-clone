@@ -36,7 +36,7 @@ jobs:
           aws-region: ap-northeast-2
       
       - name: Upload to S3
-        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://helloshop-build/$GITHUB_SHA.zip
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://$BUCKET_NAME/$GITHUB_SHA.zip
       
       - name: Code Deploy
-        run: aws deploy create-deployment --application-name karrot-clone --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name karrot-clone-deploy --s3-location bucket=helloshop-build,bundleType=zip,key=$GITHUB_SHA.zip
+        run: aws deploy create-deployment --application-name karrot-clone --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name karrot-clone-deploy --s3-location bucket=$BUCKET_NAME,bundleType=zip,key=$GITHUB_SHA.zip
