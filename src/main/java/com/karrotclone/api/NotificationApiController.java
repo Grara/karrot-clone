@@ -2,6 +2,7 @@ package com.karrotclone.api;
 
 import com.karrotclone.dto.ResponseDto;
 import com.karrotclone.utils.SseEmitters;
+import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,6 +19,7 @@ public class NotificationApiController {
 
     private final SseEmitters sseEmitters;
 
+    @ApiOperation(value = "SSE연결", notes = "알림을 받기 위한 SSE연결을 시도합니다.")
     @GetMapping(value = "/api/v1/notification/connect", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<ResponseDto> connect() throws Exception {
         SseEmitter emitter = new SseEmitter(60 * 1000L);

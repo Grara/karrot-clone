@@ -3,10 +3,15 @@ package com.karrotclone.controller;
 import com.karrotclone.domain.ChatLog;
 import com.karrotclone.domain.ChatRoom;
 import com.karrotclone.domain.Member;
+import com.karrotclone.domain.Notification;
+import com.karrotclone.domain.enums.NotificationType;
+import com.karrotclone.dto.NotificationDto;
 import com.karrotclone.exception.DomainNotFoundException;
 import com.karrotclone.repository.ChatLogRepository;
 import com.karrotclone.repository.ChatRoomRepository;
 import com.karrotclone.repository.MemberRepository;
+import com.karrotclone.repository.NotificationRepository;
+import com.karrotclone.utils.SseEmitters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -18,6 +23,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +39,8 @@ public class ChatController {
     private final MemberRepository memberRepository;
     private final ChatLogRepository chatLogRepository;
     private Map<String, String> userSessions = new ConcurrentHashMap<>();
+    private final SseEmitters emitters;
+    private final NotificationRepository notificationRepository;
 
     /**
      * 웹소켓을 이용한 채팅메세지 전달
@@ -41,7 +50,7 @@ public class ChatController {
      */
     @MessageMapping("/chat/{senderEmail}/{receiverEmail}")
     //@RolesAllowed({"USER"})
-    public void sendMessage(@DestinationVariable("senderEmail") String senderEmail, @DestinationVariable("receiverEmail") String receiverEmail, String message){
+    public void sendMessage(@DestinationVariable("senderEmail") String senderEmail, @DestinationVariable("receiverEmail") String receiverEmail, String message) throws IOException {
 
         Member sender = memberRepository.findByEmail(senderEmail)
                 .orElseThrow(() -> new DomainNotFoundException("존재하지 않는 멤버입니다."));
@@ -58,6 +67,18 @@ public class ChatController {
         chatRoom.setLastMessage(message);
         chatRoomRepository.save(chatRoom); //채팅 로그부터 저장하면 에러발생함
         chatLogRepository.save(log);
+        Notification _noti = Notification.builder()
+                .title(sender.getNickName() + "님에게 채팅이 도착했습니다")
+                .content(message)
+                .iconUrl(sender.getProfileUrl())
+                .createDateTime(LocalDateTime.now())
+                .notificationType(NotificationType.CHAT)
+                .build();
+        Notification noti = notificationRepository.save(_noti);
+
+        NotificationDto notiDto = new NotificationDto(noti);
+
+        emitters.sendEvent(receiverEmail, notiDto);
 
         sendingOperations.convertAndSend("/queue/messages/" + senderEmail + "/" + receiverEmail, message);
 

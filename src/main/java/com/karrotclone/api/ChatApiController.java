@@ -21,12 +21,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.annotation.security.RolesAllowed;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,9 +32,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatApiController {
     private final SimpMessageSendingOperations sendingOperations;
-    private MemberRepository memberRepository;
-    private ChatRoomRepository chatRoomRepository;
-    private ChatLogRepository chatLogRepository;
+    private final MemberRepository memberRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final ChatLogRepository chatLogRepository;
 
     /**
      * 현재 로그인한 멤버의 FCM토큰을 참고하여 테스트 푸쉬알림을 보냅니다.
@@ -69,6 +67,7 @@ public class ChatApiController {
 
     @ApiOperation(value = "나의 채팅목록 불러오기", notes = "나의 채팅목록을 불러옵니다.")
     @GetMapping("/api/v1/members/get-my-chat-list")
+    @RolesAllowed({"USER"})
     public ResponseEntity<ResponseDto> getMyChatList(@ApiIgnore @AuthenticationPrincipal Member member) {
 
         List<ChatRoom> chatRooms = chatRoomRepository.findListByMember(member);
@@ -104,7 +103,8 @@ public class ChatApiController {
 
     @ApiOperation(value="채팅기록 가져오기", notes = "offset을 설정한 뒤 채팅방의 기록을 가져옵니다.")
     @GetMapping("/api/v1/chat/get-by-room-id")
-    public ResponseEntity<ResponseDto> getChatLogByRoomId(@RequestBody Long roomId, Pageable pageable){
+    @RolesAllowed({"USER"})
+    public ResponseEntity<ResponseDto> getChatLogByRoomId(@RequestParam("roomId") Long roomId, Pageable pageable){
         ChatRoom chatRoom =
                 chatRoomRepository.findById(roomId).orElseThrow(() -> new DomainNotFoundException("채팅방이 존재하지 않습니다."));
         Slice<ChatLogDto> result = chatLogRepository.findListByChatRoomId(chatRoom, pageable);
