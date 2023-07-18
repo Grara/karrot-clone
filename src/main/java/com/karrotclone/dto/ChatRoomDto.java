@@ -11,4 +11,5 @@ public class ChatRoomDto {
     private String chatMateTownName;
     private String lastMessage;
     private LocalDateTime lastChatTime;
+    private Long chatroomId;
 }

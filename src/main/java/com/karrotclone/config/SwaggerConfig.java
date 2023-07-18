@@ -21,7 +21,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 public class SwaggerConfig implements WebMvcConfigurer {
 
-    private static final String API_NAME = "kerrot-clone-230717-1";
+    private static final String API_NAME = "kerrot-clone-230718-2";
     private static final String API_VERSION = "0.0.1";
     private static final String API_DESCRIPTION = "당근 클론 API 명세서";
 
@@ -34,12 +34,12 @@ public class SwaggerConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public Docket swagger(){
+    public Docket apiDocket(){
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
+                .groupName("v1")
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("com.karrotclone.api"))
-                .apis(RequestHandlerSelectors.basePackage("com.karrotclone.controller"))
                 .paths(PathSelectors.any())
                 .build();
     }

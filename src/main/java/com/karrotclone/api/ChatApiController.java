@@ -78,6 +78,7 @@ public class ChatApiController {
 
             roomDto.setLastMessage(chatRoom.getLastMessage());
             roomDto.setLastChatTime(chatRoom.getLastChatTime());
+            roomDto.setChatroomId(chatRoom.getId());
 
             if(chatRoom.getHost() != member){ //채팅룸의 호스트가 상대방일 경우
                 roomDto.setChatMateNickname(chatRoom.getHost().getNickName());
