@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 @Data
 public class ChatRoomDto {
     private String chatMateNickname;
+    private String chatMateEmail;
     private String chatMateProfileUrl;
     private String chatMateTownName;
     private String lastMessage;

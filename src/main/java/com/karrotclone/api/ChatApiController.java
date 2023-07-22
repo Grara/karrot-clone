@@ -84,12 +84,14 @@ public class ChatApiController {
                 roomDto.setChatMateNickname(chatRoom.getHost().getNickName());
                 roomDto.setChatMateProfileUrl(chatRoom.getHost().getProfileUrl());
                 roomDto.setChatMateTownName(chatRoom.getHost().getTown().getTownName());
+                roomDto.setChatMateEmail(chatRoom.getHost().getEmail());
             }
 
             else{ //채팅룸의 게스트가 상대방일 경우
                 roomDto.setChatMateNickname(chatRoom.getGuest().getNickName());
                 roomDto.setChatMateProfileUrl(chatRoom.getGuest().getProfileUrl());
                 roomDto.setChatMateTownName(chatRoom.getGuest().getTown().getTownName());
+                roomDto.setChatMateEmail(chatRoom.getGuest().getEmail());
             }
 
             chatRoomDtos.add(roomDto);
